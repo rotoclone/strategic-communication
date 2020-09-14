@@ -20,7 +20,7 @@ A best-of-breed language with a holistic approach to moving the needle
 * 5: Marketing
 * 6: R&D
 * 7: Sales
-* 8: TODO
+* 8: Manufacturing
 * 9: TODO
 
 ## Operations (unless otherwise denoted, all operands must be register names)
@@ -28,6 +28,8 @@ A best-of-breed language with a holistic approach to moving the needle
   * innovate `x`
 * multiply `x` by 10:
   * amplify `x`
+* multiply `x` by -1:
+  * revamp `x`
 * decrement `x`:
   * streamline `x`
 * divide `x` by 10:
@@ -71,7 +73,30 @@ More examples:
 * `Marketing, Marketing, Marketing` = `555`
 
 ## Example program
-This program prints the values 0 to 10 to stdout:
+This program prints the numbers 0 to 9 to stdout separated by newlines:
 ```
-TODO
+align revenue streams with Engineering and HR
+align stakeholder engagement with Finance and Manufacturing
+align customer experience with PR and HR
+moving forward, loop
+deliver customer experience
+deliver stakeholder engagement
+innovate customer experience
+streamline revenue streams
+restructure revenue streams to loop
 ```
+translated to pseudocode:
+```
+revenue_streams = 10
+stakeholder_engagement = 48 // 0
+customer_experience = 30 // newline
+while revenue_streams != 0 {
+  print(customer_experience)
+  print(stakeholder_engagement)
+  customer_experience++
+  revenue_streams--
+}
+```
+
+## Comments
+The syntax of Strategic Communication meets or exceeds the highest standards of corporate communication, therefore comments are unnecessary and not supported.
