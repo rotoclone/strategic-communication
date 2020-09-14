@@ -12,7 +12,7 @@ moving forward, loop
 deliver customer experience
 deliver stakeholder engagement
 innovate customer experience
-streamline revenue streams
+innovate revenue streams
 restructure revenue streams to loop
 ```
 Translated to pseudocode:
@@ -20,12 +20,12 @@ Translated to pseudocode:
 revenue_streams = -10
 stakeholder_engagement = 48 // '0'
 customer_experience = 30 // '\n'
-while revenue_streams < 0 {
+do {
   print(customer_experience)
   print(stakeholder_engagement)
   customer_experience++
-  revenue_streams--
-}
+  revenue_streams++
+} while revenue_streams < 0
 ```
 
 ## Register names
