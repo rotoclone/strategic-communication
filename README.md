@@ -1,7 +1,7 @@
 # strategic-communication
 A best-of-breed language with a holistic approach to moving the needle
 
-Register names:
+## Register names
 * customer experience
 * revenue streams
 * core competencies
@@ -11,7 +11,7 @@ Register names:
 * return on investment
 * assets
 
-Constant values:
+## Constants
 * 0: HR
 * 1: Engineering
 * 2: Legal
@@ -23,7 +23,7 @@ Constant values:
 * 8: TODO
 * 9: TODO
 
-Operations (unless otherwise denoted, all operands must be register names):
+## Operations (unless otherwise denoted, all operands must be register names)
 * increment `x`:
   * innovate `x`
 * multiply `x` by 10:
@@ -54,7 +54,24 @@ Operations (unless otherwise denoted, all operands must be register names):
   * paradigm shift `x`
 * read a single UTF-8 character from stdin and store it in `x`
   * crowdsource `x`
+* exit
+  * take it offline
 
 \* can be either a register name or a constant expression
 
 \** can be any string containing no reserved words
+
+## Constant expressions
+A constant expression is a sequence of one or more constants separated by `,` or `and`. The value of the expression is the result of concatenating the values of the constants. For example, `Engineering` has a value of `1` and `Marketing` has a value of `5`, so the expression `Engineering and Marketing` has a value of `15`.
+
+More examples:
+* `Engineering, Marketing, and HR` = `150`
+* `Engineering` = `1`
+* `HR and Engineering` = `1` (leading zeros are ignored)
+* `Marketing, Marketing, Marketing` = `555`
+
+## Example program
+This program prints the values 0 to 10 to stdout:
+```
+TODO
+```
