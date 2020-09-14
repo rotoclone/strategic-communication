@@ -8,12 +8,12 @@ align revenue streams with Engineering and HR
 revamp revenue streams
 align customer experience with Finance and Manufacturing
 align stakeholder engagement with PR and HR
-moving forward, loop
+moving forward, think outside the box
 deliver customer experience
 deliver stakeholder engagement
 innovate customer experience
 innovate revenue streams
-restructure revenue streams to loop
+restructure revenue streams to think outside the box
 ```
 Translated to pseudocode:
 ```
