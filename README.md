@@ -48,7 +48,7 @@ do {
 * 6: R&D
 * 7: Sales
 * 8: Manufacturing
-* 9: TODO
+* 9: Executive Management
 
 ## Operations
 Unless otherwise denoted, all operands must be register names.
