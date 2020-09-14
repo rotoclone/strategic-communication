@@ -6,8 +6,8 @@ This program prints the numbers 0 to 9 to stdout separated by newlines:
 ```
 align revenue streams with Engineering and HR
 revamp revenue streams
-align stakeholder engagement with Finance and Manufacturing
-align customer experience with PR and HR
+align customer experience with Finance and Manufacturing
+align stakeholder engagement with PR and HR
 moving forward, loop
 deliver customer experience
 deliver stakeholder engagement
@@ -18,8 +18,8 @@ restructure revenue streams to loop
 Translated to pseudocode:
 ```
 revenue_streams = -10
-stakeholder_engagement = 48 // '0'
-customer_experience = 30 // '\n'
+customer_experience = 48 // '0'
+stakeholder_engagement = 30 // '\n'
 do {
   print(customer_experience)
   print(stakeholder_engagement)
