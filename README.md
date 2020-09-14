@@ -1,5 +1,32 @@
 # strategic-communication
-A best-of-breed language with a holistic approach to moving the needle
+A best-of-breed language with a holistic approach to moving the needle.
+
+## Example program
+This program prints the numbers 0 to 9 to stdout separated by newlines:
+```
+align revenue streams with Engineering and HR
+revamp revenue streams
+align stakeholder engagement with Finance and Manufacturing
+align customer experience with PR and HR
+moving forward, loop
+deliver customer experience
+deliver stakeholder engagement
+innovate customer experience
+streamline revenue streams
+restructure revenue streams to loop
+```
+Translated to pseudocode:
+```
+revenue_streams = -10
+stakeholder_engagement = 48 // '0'
+customer_experience = 30 // '\n'
+while revenue_streams < 0 {
+  print(customer_experience)
+  print(stakeholder_engagement)
+  customer_experience++
+  revenue_streams--
+}
+```
 
 ## Register names
 * customer experience
@@ -72,33 +99,6 @@ More examples:
 * `Engineering` = `1`
 * `HR and Engineering` = `1` (leading zeros are ignored)
 * `Marketing, Marketing, Marketing` = `555`
-
-## Example program
-This program prints the numbers 0 to 9 to stdout separated by newlines:
-```
-align revenue streams with Engineering and HR
-revamp revenue streams
-align stakeholder engagement with Finance and Manufacturing
-align customer experience with PR and HR
-moving forward, loop
-deliver customer experience
-deliver stakeholder engagement
-innovate customer experience
-streamline revenue streams
-restructure revenue streams to loop
-```
-translated to pseudocode:
-```
-revenue_streams = -10
-stakeholder_engagement = 48 // 0
-customer_experience = 30 // newline
-while revenue_streams < 0 {
-  print(customer_experience)
-  print(stakeholder_engagement)
-  customer_experience++
-  revenue_streams--
-}
-```
 
 ## Comments
 The syntax of Strategic Communication meets or exceeds the highest standards of corporate communication, therefore comments are unnecessary and not supported.
