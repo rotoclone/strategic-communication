@@ -23,7 +23,8 @@ A best-of-breed language with a holistic approach to moving the needle
 * 8: Manufacturing
 * 9: TODO
 
-## Operations (unless otherwise denoted, all operands must be register names)
+## Operations
+Unless otherwise denoted, all operands must be register names.
 * increment `x`:
   * innovate `x`
 * multiply `x` by 10:
@@ -76,6 +77,7 @@ More examples:
 This program prints the numbers 0 to 9 to stdout separated by newlines:
 ```
 align revenue streams with Engineering and HR
+revamp revenue streams
 align stakeholder engagement with Finance and Manufacturing
 align customer experience with PR and HR
 moving forward, loop
@@ -87,10 +89,10 @@ restructure revenue streams to loop
 ```
 translated to pseudocode:
 ```
-revenue_streams = 10
+revenue_streams = -10
 stakeholder_engagement = 48 // 0
 customer_experience = 30 // newline
-while revenue_streams != 0 {
+while revenue_streams < 0 {
   print(customer_experience)
   print(stakeholder_engagement)
   customer_experience++
