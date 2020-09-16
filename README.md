@@ -68,6 +68,7 @@ Unless otherwise denoted, all operands must be register names.
   * differentiate `x` from `y`
 * define a label called `x`
   * moving forward, `x**`
+  * going forward, `x**`
 * jump to label `x`
   * circle back to `x**`
 * jump to label `x` if the value in `y` is zero
