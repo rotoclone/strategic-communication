@@ -125,11 +125,20 @@ impl fmt::Display for RuntimeError {
     }
 }
 
+impl RuntimeError {
+    fn new(message: &str, context: &Context) -> RuntimeError {
+        RuntimeError {
+            line_number: context.current_line_number,
+            message: message.to_string(),
+        }
+    }
+}
+
 type OpResult = Result<(), RuntimeError>;
 
-pub struct Operation {
-    pub pattern: Regex,
-    pub func: fn(&str, &Context) -> OpResult,
+struct Operation {
+    pattern: Regex,
+    func: fn(&str, &mut Context) -> OpResult,
 }
 
 #[derive(Debug)]
@@ -167,10 +176,7 @@ impl Context {
 
     fn execute_current_line(&mut self) -> Result<(), RuntimeError> {
         if self.current_line_number >= self.source.len() {
-            return Err(RuntimeError {
-                line_number: self.current_line_number,
-                message: "invalid line number".to_string(),
-            });
+            return Err(RuntimeError::new("invalid line number", self));
         }
 
         let line = &self.source[self.current_line_number];
@@ -185,9 +191,6 @@ impl Context {
             }
         }
 
-        Err(RuntimeError {
-            line_number: self.current_line_number,
-            message: "unexpected expression".to_string(),
-        })
+        Err(RuntimeError::new("unexpected expression", self))
     }
 }
