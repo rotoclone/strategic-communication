@@ -185,7 +185,9 @@ impl Context {
         for op in OPERATIONS.iter() {
             if op.pattern.is_match(line) {
                 let operands = op.pattern.replace(&line, "").to_string();
+                trace!("registers before: {:?}", self.registers);
                 (op.func)(&operands, self)?;
+                trace!("registers after: {:?}", self.registers);
                 self.current_line_number += 1;
                 return Ok(());
             }

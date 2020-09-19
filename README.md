@@ -4,10 +4,10 @@ A best-of-breed language with a holistic approach to moving the needle.
 ## Example program
 This program prints the numbers 0 to 9 to stdout separated by newlines:
 ```
-align revenue streams with Engineering and HR
+align stakeholder engagement with Engineering and HR
+align revenue streams with stakeholder engagement
 revamp revenue streams
 align customer experience with Finance and Manufacturing
-align stakeholder engagement with PR and HR
 moving forward, think outside the box
 deliver customer experience
 deliver stakeholder engagement
@@ -17,9 +17,9 @@ restructure revenue streams to think outside the box
 ```
 Translated to pseudocode:
 ```
-revenue_streams = -10
+stakeholder_engagement = 10 // '\n'
+revenue_streams = stakeholder_engagement * -1
 customer_experience = 48 // '0'
-stakeholder_engagement = 30 // '\n'
 do {
   print(customer_experience)
   print(stakeholder_engagement)
