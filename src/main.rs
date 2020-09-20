@@ -40,22 +40,10 @@ lazy_static! {
         map
     };
     static ref LABEL_PATTERN: Regex = Regex::new("^(moving|going) forward, ").unwrap();
-    static ref OPERATIONS: [Operation; 8] = [
+    static ref OPERATIONS: [Operation; 9] = [
         Operation {
             pattern: LABEL_PATTERN.clone(),
             func: operations::no_op
-        },
-        Operation {
-            pattern: Regex::new("^align ").unwrap(),
-            func: operations::assign
-        },
-        Operation {
-            pattern: Regex::new("^revamp ").unwrap(),
-            func: operations::negate
-        },
-        Operation {
-            pattern: Regex::new("^deliver ").unwrap(),
-            func: operations::print
         },
         Operation {
             pattern: Regex::new("^innovate ").unwrap(),
@@ -66,12 +54,28 @@ lazy_static! {
             func: operations::decrement
         },
         Operation {
-            pattern: Regex::new("^restructure ").unwrap(),
-            func: operations::jump_if_neg
+            pattern: Regex::new("^revamp ").unwrap(),
+            func: operations::negate
         },
         Operation {
             pattern: Regex::new("^amplify ").unwrap(),
             func: operations::double
+        },
+        Operation {
+            pattern: Regex::new("^backburner ").unwrap(),
+            func: operations::halve
+        },
+        Operation {
+            pattern: Regex::new("^align ").unwrap(),
+            func: operations::assign
+        },
+        Operation {
+            pattern: Regex::new("^deliver ").unwrap(),
+            func: operations::print
+        },
+        Operation {
+            pattern: Regex::new("^restructure ").unwrap(),
+            func: operations::jump_if_neg
         },
     ];
 }

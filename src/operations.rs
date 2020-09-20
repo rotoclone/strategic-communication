@@ -47,6 +47,16 @@ pub fn double(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+pub fn halve(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("halve with operands: {}", operands);
+
+    Ok(modify_register(
+        operands,
+        Transformation::Divide(2),
+        &mut context,
+    )?)
+}
+
 pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
