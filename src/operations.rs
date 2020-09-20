@@ -37,6 +37,16 @@ pub fn negate(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+pub fn double(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("double with operands: {}", operands);
+
+    Ok(modify_register(
+        operands,
+        Transformation::Multiply(2),
+        &mut context,
+    )?)
+}
+
 pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
