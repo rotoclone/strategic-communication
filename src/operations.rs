@@ -2,6 +2,7 @@ use crate::{Context, OpResult, RuntimeError, LITERALS, REGISTER_NAMES};
 use rand::Rng;
 use regex::Regex;
 use std::collections::hash_map::Entry::Occupied;
+use std::io::Read;
 
 pub fn no_op(operands: &str, _context: &mut Context) -> OpResult {
     debug!("no op with operands: {}", operands);
@@ -115,6 +116,107 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
 
     Ok(modify_register(
         to_register,
+        Transformation::Set(new_value),
+        &mut context,
+    )?)
+}
+
+pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("add with operands: {}", operands);
+
+    let operands = parse_operands(operands)?;
+    // should be a register followed by a register
+    if operands.len() != 2 {
+        return Err(RuntimeError::new(
+            "wrong number of operands for add",
+            context,
+        ));
+    }
+
+    let register = match &operands[0] {
+        Operand::Register(name) => name,
+        _ => {
+            return Err(RuntimeError::new(
+                "first operand for add must be a register",
+                context,
+            ))
+        }
+    };
+
+    let to_add = match &operands[1] {
+        Operand::Register(name) => get_register_value(name, context)?,
+        _ => {
+            return Err(RuntimeError::new(
+                "second operand for add must be a register",
+                context,
+            ))
+        }
+    };
+
+    Ok(modify_register(
+        register,
+        Transformation::Add(to_add),
+        &mut context,
+    )?)
+}
+
+pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("subtract with operands: {}", operands);
+
+    let operands = parse_operands(operands)?;
+    // should be a register followed by a register
+    if operands.len() != 2 {
+        return Err(RuntimeError::new(
+            "wrong number of operands for subtract",
+            context,
+        ));
+    }
+
+    let register = match &operands[0] {
+        Operand::Register(name) => name,
+        _ => {
+            return Err(RuntimeError::new(
+                "first operand for subtract must be a register",
+                context,
+            ))
+        }
+    };
+
+    let to_sub = match &operands[1] {
+        Operand::Register(name) => get_register_value(name, context)?,
+        _ => {
+            return Err(RuntimeError::new(
+                "second operand for subtract must be a register",
+                context,
+            ))
+        }
+    };
+
+    Ok(modify_register(
+        register,
+        Transformation::Add(-to_sub),
+        &mut context,
+    )?)
+}
+
+pub fn read(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("read with operands: {}", operands);
+
+    let new_value = match std::io::stdin().bytes().next() {
+        Some(b) => match b {
+            Ok(b) => b as i32,
+            Err(e) => {
+                return Err(RuntimeError::new(
+                    &format!("error reading from stdin: {}", e),
+                    context,
+                ))
+            }
+        },
+        None => -1,
+    };
+
+    Ok(modify_register(
+        operands,
         Transformation::Set(new_value),
         &mut context,
     )?)

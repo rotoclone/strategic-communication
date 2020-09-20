@@ -68,11 +68,11 @@ Unless otherwise denoted, all operands must be register names.
   * paradigm shift `x`
 * set `x` to `y`
   * align `x` with `y*`
-* add `x` to `y` and store the result in `x` (TODO)
+* add `x` to `y` and store the result in `x`
   * synergize `x` with `y`
-* subtract `y` from `x` and store the result in `x` (TODO)
-  * differentiate `x` from `y`
-* read a single UTF-8 character from stdin and store it in `x` (TODO)
+* subtract `y` from `x` and store the result in `x`
+  * differentiate `x` and `y`
+* read a single byte from stdin and store it in `x` (if there are no bytes to read, `x` is set to -1)
   * crowdsource `x`
 * print `x` to stdout (in UTF-8 encoding)
   * deliver `x`
@@ -82,15 +82,15 @@ Unless otherwise denoted, all operands must be register names.
 * jump to label `x`
   * circle back to `x**`
 * jump to label `x` if the value in `y` is zero
-  * pivot `y` to `x**`
+  * pivot `y` to `x***`
 * jump to label `x` if the value in `y` is negative
-  * restructure `y` to `x**`
-* exit (TODO)
-  * take it offline
+  * restructure `y` to `x***`
 
 \* can be either a register name or a constant expression
 
 \** can be any string containing no reserved words
+
+\*** must be a defined label
 
 ## Constant expressions
 A constant expression is a sequence of one or more constants separated by `,` or `and`. The value of the expression is the result of concatenating the values of the constants. For example, `Engineering` has a value of `1` and `Marketing` has a value of `5`, so the expression `Engineering and Marketing` has a value of `15`.
