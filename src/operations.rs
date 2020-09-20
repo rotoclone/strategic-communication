@@ -169,6 +169,51 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
     Ok(())
 }
 
+pub fn jump(operands: &str, context: &mut Context) -> OpResult {
+    debug!("jump with operands: {}", operands);
+
+    jump_to_label(operands, context)
+}
+
+pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
+    debug!("jump if zero with operands: {}", operands);
+
+    let operands = parse_operands(operands)?;
+    // should be a register and a label
+    if operands.len() != 2 {
+        return Err(RuntimeError::new(
+            "wrong number of operands for jump if zero",
+            context,
+        ));
+    }
+
+    let register = match &operands[0] {
+        Operand::Register(name) => name,
+        _ => {
+            return Err(RuntimeError::new(
+                "first operand for jump if zero must be a register",
+                context,
+            ))
+        }
+    };
+
+    let label = match &operands[1] {
+        Operand::Label(name) => name,
+        _ => {
+            return Err(RuntimeError::new(
+                "second operand for jump if zero must be a label",
+                context,
+            ))
+        }
+    };
+
+    if get_register_value(register, context)? == 0 {
+        jump_to_label(label, context)?;
+    }
+
+    Ok(())
+}
+
 pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     debug!("jump if negative with operands: {}", operands);
 

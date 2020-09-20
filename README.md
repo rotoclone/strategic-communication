@@ -79,9 +79,9 @@ Unless otherwise denoted, all operands must be register names.
 * define a label called `x`
   * moving forward, `x**`
   * going forward, `x**`
-* jump to label `x` (TODO)
+* jump to label `x`
   * circle back to `x**`
-* jump to label `x` if the value in `y` is zero (TODO)
+* jump to label `x` if the value in `y` is zero
   * pivot `y` to `x**`
 * jump to label `x` if the value in `y` is negative
   * restructure `y` to `x**`
