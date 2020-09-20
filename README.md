@@ -52,40 +52,40 @@ do {
 
 ## Operations
 Unless otherwise denoted, all operands must be register names.
-* increment `x`:
+* increment `x`
   * innovate `x`
-* multiply `x` by 2:
-  * amplify `x`
-* multiply `x` by -1:
-  * revamp `x`
-* decrement `x`:
+* decrement `x`
   * streamline `x`
-* divide `x` by 2:
+* multiply `x` by -1
+  * revamp `x`
+* multiply `x` by 2
+  * amplify `x`
+* divide `x` by 2 (throwing away remainder)
   * backburner `x`
-* add `x` to `y` and store the result in `x`
+* set `x` to zero
+  * overhaul `x`
+* set `x` to `y`
+  * align `x` with `y*`
+* set `x` to a random number between 0 and 9 inclusive (TODO)
+  * paradigm shift `x`
+* add `x` to `y` and store the result in `x` (TODO)
   * synergize `x` with `y`
-* subtract `y` from `x` and store the result in `x`
+* subtract `y` from `x` and store the result in `x` (TODO)
   * differentiate `x` from `y`
+* read a single UTF-8 character from stdin and store it in `x` (TODO)
+  * crowdsource `x`
+* print `x` to stdout (in UTF-8 encoding)
+  * deliver `x`
 * define a label called `x`
   * moving forward, `x**`
   * going forward, `x**`
-* jump to label `x`
+* jump to label `x` (TODO)
   * circle back to `x**`
-* jump to label `x` if the value in `y` is zero
+* jump to label `x` if the value in `y` is zero (TODO)
   * pivot `y` to `x**`
 * jump to label `x` if the value in `y` is negative
   * restructure `y` to `x**`
-* set `x` to `y`
-  * align `x` with `y*`
-* print `x` to stdout (in UTF-8 encoding)
-  * deliver `x`
-* set `x` to zero
-  * overhaul `x`
-* set `x` to a random number between 0 and 9 inclusive
-  * paradigm shift `x`
-* read a single UTF-8 character from stdin and store it in `x`
-  * crowdsource `x`
-* exit
+* exit (TODO)
   * take it offline
 
 \* can be either a register name or a constant expression

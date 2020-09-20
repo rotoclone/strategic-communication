@@ -57,6 +57,16 @@ pub fn halve(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+pub fn zero(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("zero with operands: {}", operands);
+
+    Ok(modify_register(
+        operands,
+        Transformation::Set(0),
+        &mut context,
+    )?)
+}
+
 pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
