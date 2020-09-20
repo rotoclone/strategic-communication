@@ -54,33 +54,38 @@ do {
 Unless otherwise denoted, all operands must be register names.
 * increment `x`
   * innovate `x`
+  * value-add `x`
 * decrement `x`
   * streamline `x`
+  * optimize `x`
 * multiply `x` by -1
   * revamp `x`
+  * overhaul `x`
 * multiply `x` by 2
   * amplify `x`
+  * incentivize `x`
 * divide `x` by 2 (throwing away remainder)
   * backburner `x`
-* set `x` to zero
-  * overhaul `x`
 * set `x` to a random number between 0 and 9 inclusive
   * paradigm shift `x`
 * set `x` to `y`
   * align `x` with `y*`
 * add `x` to `y` and store the result in `x`
-  * synergize `x` with `y`
+  * synergize `x` and `y`
+  * integrate `x` and `y`
 * subtract `y` from `x` and store the result in `x`
   * differentiate `x` and `y`
 * read a single byte from stdin and store it in `x` (if there are no bytes to read, `x` is set to -1)
   * crowdsource `x`
 * print `x` to stdout (in UTF-8 encoding)
   * deliver `x`
+  * produce `x`
 * define a label called `x`
   * moving forward, `x**`
   * going forward, `x**`
 * jump to label `x`
   * circle back to `x***`
+  * revisit `x***`
 * jump to label `x` if the value in `y` is zero
   * pivot `y` to `x***`
 * jump to label `x` if the value in `y` is negative

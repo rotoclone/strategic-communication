@@ -48,34 +48,30 @@ lazy_static! {
     };
     /// The pattern for lines that define a label.
     static ref LABEL_PATTERN: Regex = Regex::new("^(moving|going) forward, ").unwrap();
-    static ref OPERATIONS: [Operation; 16] = [
+    static ref OPERATIONS: [Operation; 15] = [
         Operation {
             pattern: LABEL_PATTERN.clone(),
             func: operations::no_op
         },
         Operation {
-            pattern: Regex::new("^innovate ").unwrap(),
+            pattern: Regex::new("^(innovate|value-add) ").unwrap(),
             func: operations::increment
         },
         Operation {
-            pattern: Regex::new("^streamline ").unwrap(),
+            pattern: Regex::new("^(streamline|optimize) ").unwrap(),
             func: operations::decrement
         },
         Operation {
-            pattern: Regex::new("^revamp ").unwrap(),
+            pattern: Regex::new("^(revamp|overhaul) ").unwrap(),
             func: operations::negate
         },
         Operation {
-            pattern: Regex::new("^amplify ").unwrap(),
+            pattern: Regex::new("^(amplify|incentivize) ").unwrap(),
             func: operations::double
         },
         Operation {
             pattern: Regex::new("^backburner ").unwrap(),
             func: operations::halve
-        },
-        Operation {
-            pattern: Regex::new("^overhaul ").unwrap(),
-            func: operations::zero
         },
         Operation {
             pattern: Regex::new("^paradigm shift ").unwrap(),
@@ -86,7 +82,7 @@ lazy_static! {
             func: operations::assign
         },
         Operation {
-            pattern: Regex::new("^synergize ").unwrap(),
+            pattern: Regex::new("^(synergize|integrate) ").unwrap(),
             func: operations::add
         },
         Operation {
@@ -98,11 +94,11 @@ lazy_static! {
             func: operations::read
         },
         Operation {
-            pattern: Regex::new("^deliver ").unwrap(),
+            pattern: Regex::new("^(deliver|produce) ").unwrap(),
             func: operations::print
         },
         Operation {
-            pattern: Regex::new("^circle back to ").unwrap(),
+            pattern: Regex::new("^(circle back to|revisit) ").unwrap(),
             func: operations::jump
         },
         Operation {

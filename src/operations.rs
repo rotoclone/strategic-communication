@@ -68,17 +68,6 @@ pub fn halve(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
-/// Sets a register's value to 0.
-pub fn zero(operands: &str, mut context: &mut Context) -> OpResult {
-    debug!("zero with operands: {}", operands);
-
-    Ok(modify_register(
-        operands,
-        Transformation::Set(0),
-        &mut context,
-    )?)
-}
-
 /// Sets a register's value to a random number between 0 and 9 (inclusive).
 pub fn randomize(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("randomize with operands: {}", operands);
