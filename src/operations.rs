@@ -3,7 +3,7 @@ use rand::Rng;
 use regex::Regex;
 use std::collections::hash_map::Entry::Occupied;
 
-pub fn no_op(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn no_op(operands: &str, _context: &mut Context) -> OpResult {
     debug!("no op with operands: {}", operands);
     Ok(())
 }
