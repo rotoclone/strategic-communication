@@ -76,7 +76,7 @@ pub fn negate(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
-pub fn print(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn print(operands: &str, context: &mut Context) -> OpResult {
     debug!("print with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -145,7 +145,7 @@ pub fn decrement(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
-pub fn jump_if_neg(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     debug!("jump if negative with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
