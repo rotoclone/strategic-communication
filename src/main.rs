@@ -24,6 +24,9 @@ const REGISTER_NAMES: [&str; 8] = [
     "assets",
 ];
 
+const OPERAND_CONNECTORS: [&str; 3] = [" and ", " with ", " to "];
+const LITERAL_CONNECTORS: [&str; 3] = [", and ", " and ", ", "];
+
 lazy_static! {
     static ref LITERALS: HashMap<String, u8> = {
         let mut map = HashMap::new();

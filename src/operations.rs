@@ -1,4 +1,7 @@
-use crate::{Context, OpResult, RuntimeError, LITERALS, REGISTER_NAMES};
+use crate::{
+    Context, OpResult, RuntimeError, LITERALS, LITERAL_CONNECTORS, OPERAND_CONNECTORS,
+    REGISTER_NAMES,
+};
 use rand::Rng;
 use regex::Regex;
 use std::collections::hash_map::Entry::Occupied;
@@ -371,7 +374,12 @@ fn parse_operands(operands: &str) -> Result<Vec<Operand>, RuntimeError> {
             if remaining_operands.starts_with(register_name) {
                 parsed_operands.push(Operand::Register(register_name.to_string()));
                 //TODO make this regex not be compiled a bunch of times
-                let regex = Regex::new(&format!("^{}( and | with | to )?", register_name)).unwrap();
+                let regex = Regex::new(&format!(
+                    "^{}({})?",
+                    register_name,
+                    OPERAND_CONNECTORS.join("|")
+                ))
+                .unwrap();
                 remaining_operands = regex.replace(&remaining_operands, "").to_string();
                 continue 'outer;
             }
@@ -400,7 +408,12 @@ fn parse_literal(operands: &mut String) -> i32 {
             if operands.starts_with(literal_name) {
                 found_literals.push(*literal_value);
                 //TODO make this regex not be compiled a bunch of times
-                let regex = Regex::new(&format!("^{}(, and | and |, )?", literal_name)).unwrap();
+                let regex = Regex::new(&format!(
+                    "^{}({})?",
+                    literal_name,
+                    LITERAL_CONNECTORS.join("|")
+                ))
+                .unwrap();
                 *operands = regex.replace(operands, "").to_string();
                 continue 'outer;
             }
