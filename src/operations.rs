@@ -7,6 +7,36 @@ pub fn no_op(operands: &str, mut context: &mut Context) -> OpResult {
     Ok(())
 }
 
+pub fn increment(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("increment with operands: {}", operands);
+
+    Ok(modify_register(
+        operands,
+        Transformation::Add(1),
+        &mut context,
+    )?)
+}
+
+pub fn decrement(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("decrement with operands: {}", operands);
+
+    Ok(modify_register(
+        operands,
+        Transformation::Add(-1),
+        &mut context,
+    )?)
+}
+
+pub fn negate(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("negate with operands: {}", operands);
+
+    Ok(modify_register(
+        operands,
+        Transformation::Multiply(-1),
+        &mut context,
+    )?)
+}
+
 pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
@@ -43,35 +73,6 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     Ok(modify_register(
         to_register,
         Transformation::Set(new_value),
-        &mut context,
-    )?)
-}
-
-pub fn negate(operands: &str, mut context: &mut Context) -> OpResult {
-    debug!("negation with operands: {}", operands);
-
-    let operands = parse_operands(operands)?;
-    // should be a register
-    if operands.len() != 1 {
-        return Err(RuntimeError::new(
-            "wrong number of operands for negation",
-            context,
-        ));
-    }
-
-    let register = match &operands[0] {
-        Operand::Register(name) => name,
-        _ => {
-            return Err(RuntimeError::new(
-                "operand for negation must be a register",
-                context,
-            ))
-        }
-    };
-
-    Ok(modify_register(
-        register,
-        Transformation::Multiply(-1),
         &mut context,
     )?)
 }
@@ -123,26 +124,6 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
     }
 
     Ok(())
-}
-
-pub fn increment(operands: &str, mut context: &mut Context) -> OpResult {
-    debug!("increment with operands: {}", operands);
-
-    Ok(modify_register(
-        operands,
-        Transformation::Add(1),
-        &mut context,
-    )?)
-}
-
-pub fn decrement(operands: &str, mut context: &mut Context) -> OpResult {
-    debug!("decrement with operands: {}", operands);
-
-    Ok(modify_register(
-        operands,
-        Transformation::Add(-1),
-        &mut context,
-    )?)
 }
 
 pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
