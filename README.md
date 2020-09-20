@@ -80,7 +80,7 @@ Unless otherwise denoted, all operands must be register names.
   * moving forward, `x**`
   * going forward, `x**`
 * jump to label `x`
-  * circle back to `x**`
+  * circle back to `x***`
 * jump to label `x` if the value in `y` is zero
   * pivot `y` to `x***`
 * jump to label `x` if the value in `y` is negative

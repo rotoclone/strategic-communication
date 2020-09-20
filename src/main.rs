@@ -24,10 +24,14 @@ const REGISTER_NAMES: [&str; 8] = [
     "assets",
 ];
 
+/// Strings that can be placed between operands.
 const OPERAND_CONNECTORS: [&str; 3] = [" and ", " with ", " to "];
+
+/// Strings that can be placed between literals.
 const LITERAL_CONNECTORS: [&str; 3] = [", and ", " and ", ", "];
 
 lazy_static! {
+    /// Map of literals to the values they represent.
     static ref LITERALS: HashMap<String, u8> = {
         let mut map = HashMap::new();
         map.insert("hr".to_string(), 0);
@@ -42,6 +46,7 @@ lazy_static! {
         map.insert("executive management".to_string(), 9);
         map
     };
+    /// The pattern for lines that define a label.
     static ref LABEL_PATTERN: Regex = Regex::new("^(moving|going) forward, ").unwrap();
     static ref OPERATIONS: [Operation; 16] = [
         Operation {
@@ -114,7 +119,7 @@ lazy_static! {
 /// Interpreter for the programming language Strategic Communication.
 /// More information can be found at https://github.com/rotoclone/strategic-communication/blob/master/README.md
 #[derive(Clap)]
-#[clap(version = "0.1.0", author = "Steven Goldberg")]
+#[clap(version = env!("CARGO_PKG_VERSION"))]
 struct Opts {
     /// The path to the file containing source code to execute
     file: String,
@@ -136,6 +141,12 @@ fn main() {
     }
 }
 
+/// Runs a program.
+///
+/// # Arguments
+/// * `source`: The source code of the program to run, split by line.
+///
+/// Returns `Err(RuntimeError)` if any errors occurred during the execution of the program.
 fn run(source: Vec<String>) -> Result<(), RuntimeError> {
     let mut context = Context::new(source);
     debug!("created context: {:?}", context);
@@ -145,9 +156,12 @@ fn run(source: Vec<String>) -> Result<(), RuntimeError> {
     Ok(())
 }
 
+/// An error during the execution of a program.
 #[derive(Debug)]
 pub struct RuntimeError {
+    /// The 0-indexed line number the error occurred on.
     line_number: usize,
+    /// A message describing the error.
     message: String,
 }
 
@@ -165,6 +179,7 @@ impl fmt::Display for RuntimeError {
 }
 
 impl RuntimeError {
+    /// Creates a new `RuntimeError` with the provided message.
     fn new(message: &str, context: &Context) -> RuntimeError {
         RuntimeError {
             line_number: context.current_line_number,
@@ -173,22 +188,35 @@ impl RuntimeError {
     }
 }
 
+/// Return type for operation execution functions.
 type OpResult = Result<(), RuntimeError>;
 
+/// An operation corresponding to a line of source code.
 struct Operation {
+    /// The regular expression to use to determine if a given line should cause this operation to be executed.
     pattern: Regex,
+    /// The function that executes this operation.
     func: fn(&str, &mut Context) -> OpResult,
 }
 
+/// A representation of the state of "memory" during the execution of a program.
 #[derive(Debug)]
 pub struct Context {
+    /// The source code of the program, split by line.
     source: Vec<String>,
+    /// Map of register names to their current values.
     registers: HashMap<String, i32>,
+    /// Map of label names to the lines they are defined on.
     labels: HashMap<String, usize>,
+    /// The 0-indexed line number currently being executed.
     current_line_number: usize,
 }
 
 impl Context {
+    /// Creates a new `Context` for a program.
+    ///
+    /// # Arguments
+    /// * `source`: The source code of the program, split by line.
     fn new(source: Vec<String>) -> Context {
         let labels = Context::find_labels(&source);
         Context {
@@ -202,6 +230,12 @@ impl Context {
         }
     }
 
+    /// Finds all the labels defined in the provided program.
+    ///
+    /// # Arguments
+    /// * `source`: The source code of the program, split by line.
+    ///
+    /// Returns a map of label names to the lines they are defined on.
     fn find_labels(source: &[String]) -> HashMap<String, usize> {
         let mut labels: HashMap<String, usize> = HashMap::new();
         for (line_number, line) in source.iter().enumerate() {
@@ -213,6 +247,7 @@ impl Context {
         labels
     }
 
+    /// Executes the line at `source[current_line_number]` and sets `current_line_number` to the index of the next line to execute.
     fn execute_current_line(&mut self) -> Result<(), RuntimeError> {
         if self.current_line_number >= self.source.len() {
             return Err(RuntimeError::new("invalid line number", self));

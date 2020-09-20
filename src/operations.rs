@@ -7,11 +7,13 @@ use regex::Regex;
 use std::collections::hash_map::Entry::Occupied;
 use std::io::Read;
 
+/// Does nothing.
 pub fn no_op(operands: &str, _context: &mut Context) -> OpResult {
     debug!("no op with operands: {}", operands);
     Ok(())
 }
 
+/// Increments a register's value by 1.
 pub fn increment(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("increment with operands: {}", operands);
 
@@ -22,6 +24,7 @@ pub fn increment(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Decrements a register's value by 1.
 pub fn decrement(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("decrement with operands: {}", operands);
 
@@ -32,6 +35,7 @@ pub fn decrement(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Multiplies a register's value by -1.
 pub fn negate(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("negate with operands: {}", operands);
 
@@ -42,6 +46,7 @@ pub fn negate(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Multiplies a register's value by 2.
 pub fn double(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("double with operands: {}", operands);
 
@@ -52,6 +57,7 @@ pub fn double(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Divides a register's value by 2.
 pub fn halve(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("halve with operands: {}", operands);
 
@@ -62,6 +68,7 @@ pub fn halve(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Sets a register's value to 0.
 pub fn zero(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("zero with operands: {}", operands);
 
@@ -72,6 +79,7 @@ pub fn zero(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Sets a register's value to a random number between 0 and 9 (inclusive).
 pub fn randomize(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("randomize with operands: {}", operands);
 
@@ -84,6 +92,7 @@ pub fn randomize(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Sets a register's value to the value in another register or a literal value.
 pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
@@ -124,6 +133,7 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Adds a register's value to another register's value.
 pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("add with operands: {}", operands);
 
@@ -163,6 +173,7 @@ pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Subtracts a register's value from another register's value.
 pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("subtract with operands: {}", operands);
 
@@ -202,6 +213,7 @@ pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Reads a byte from stdin.
 pub fn read(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("read with operands: {}", operands);
 
@@ -225,6 +237,7 @@ pub fn read(operands: &str, mut context: &mut Context) -> OpResult {
     )?)
 }
 
+/// Prints a register's value.
 pub fn print(operands: &str, context: &mut Context) -> OpResult {
     debug!("print with operands: {}", operands);
 
@@ -274,12 +287,14 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
     Ok(())
 }
 
+/// Jumps to a label.
 pub fn jump(operands: &str, context: &mut Context) -> OpResult {
     debug!("jump with operands: {}", operands);
 
     jump_to_label(operands, context)
 }
 
+/// Jumps to a label if a register's value is 0.
 pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
     debug!("jump if zero with operands: {}", operands);
 
@@ -319,6 +334,7 @@ pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
     Ok(())
 }
 
+/// Jumps to a label if a register's value is negative.
 pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     debug!("jump if negative with operands: {}", operands);
 
@@ -358,13 +374,18 @@ pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     Ok(())
 }
 
+/// An operand for an operation.
 #[derive(Debug)]
 enum Operand {
+    /// The name of a register.
     Register(String),
+    /// A literal value.
     Literal(i32),
+    /// The name of a label.
     Label(String),
 }
 
+/// Parses a string of operands to a list of `Operand`s.
 fn parse_operands(operands: &str) -> Result<Vec<Operand>, RuntimeError> {
     let mut remaining_operands = operands.to_string();
     let mut parsed_operands = Vec::new();
@@ -373,7 +394,6 @@ fn parse_operands(operands: &str) -> Result<Vec<Operand>, RuntimeError> {
         for register_name in REGISTER_NAMES.iter() {
             if remaining_operands.starts_with(register_name) {
                 parsed_operands.push(Operand::Register(register_name.to_string()));
-                //TODO make this regex not be compiled a bunch of times
                 let regex = Regex::new(&format!(
                     "^{}({})?",
                     register_name,
@@ -401,13 +421,14 @@ fn parse_operands(operands: &str) -> Result<Vec<Operand>, RuntimeError> {
     Ok(parsed_operands)
 }
 
+/// Parses a literal value from a string of operands.
+/// The string representation of the literal will be removed from the provided string.
 fn parse_literal(operands: &mut String) -> i32 {
     let mut found_literals = Vec::new();
     'outer: while !operands.is_empty() {
         for (literal_name, literal_value) in LITERALS.iter() {
             if operands.starts_with(literal_name) {
                 found_literals.push(*literal_value);
-                //TODO make this regex not be compiled a bunch of times
                 let regex = Regex::new(&format!(
                     "^{}({})?",
                     literal_name,
@@ -433,6 +454,7 @@ fn parse_literal(operands: &mut String) -> i32 {
     combined
 }
 
+/// Gets the value stored in the register with the provided name.
 fn get_register_value(name: &str, context: &Context) -> Result<i32, RuntimeError> {
     match context.registers.get(name) {
         Some(x) => Ok(*x),
@@ -443,6 +465,7 @@ fn get_register_value(name: &str, context: &Context) -> Result<i32, RuntimeError
     }
 }
 
+/// A transformation to apply to a register's value.
 enum Transformation {
     Add(i32),
     Multiply(i32),
@@ -450,6 +473,7 @@ enum Transformation {
     Set(i32),
 }
 
+/// Modifies the register with the provided name using the provided `Transformation`.
 fn modify_register(name: &str, transformation: Transformation, context: &mut Context) -> OpResult {
     let mut register = match context.registers.entry(name.to_string()) {
         Occupied(e) => e,
@@ -471,6 +495,7 @@ fn modify_register(name: &str, transformation: Transformation, context: &mut Con
     Ok(())
 }
 
+/// Sets the provided context's `current_line_number` to the line the provided label is defined on.
 fn jump_to_label(name: &str, mut context: &mut Context) -> OpResult {
     match context.labels.get(name) {
         Some(x) => context.current_line_number = *x,
