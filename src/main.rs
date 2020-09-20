@@ -86,7 +86,7 @@ lazy_static! {
             func: operations::assign
         },
         Operation {
-            pattern: Regex::new("^syngergize ").unwrap(),
+            pattern: Regex::new("^synergize ").unwrap(),
             func: operations::add
         },
         Operation {
