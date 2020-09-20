@@ -64,10 +64,10 @@ Unless otherwise denoted, all operands must be register names.
   * backburner `x`
 * set `x` to zero
   * overhaul `x`
+* set `x` to a random number between 0 and 9 inclusive
+  * paradigm shift `x`
 * set `x` to `y`
   * align `x` with `y*`
-* set `x` to a random number between 0 and 9 inclusive (TODO)
-  * paradigm shift `x`
 * add `x` to `y` and store the result in `x` (TODO)
   * synergize `x` with `y`
 * subtract `y` from `x` and store the result in `x` (TODO)

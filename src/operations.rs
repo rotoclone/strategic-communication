@@ -1,4 +1,5 @@
 use crate::{Context, OpResult, RuntimeError, LITERALS, REGISTER_NAMES};
+use rand::Rng;
 use regex::Regex;
 use std::collections::hash_map::Entry::Occupied;
 
@@ -63,6 +64,18 @@ pub fn zero(operands: &str, mut context: &mut Context) -> OpResult {
     Ok(modify_register(
         operands,
         Transformation::Set(0),
+        &mut context,
+    )?)
+}
+
+pub fn randomize(operands: &str, mut context: &mut Context) -> OpResult {
+    debug!("randomize with operands: {}", operands);
+
+    let random_number = rand::thread_rng().gen_range(0, 10);
+
+    Ok(modify_register(
+        operands,
+        Transformation::Set(random_number),
         &mut context,
     )?)
 }
