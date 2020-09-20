@@ -54,13 +54,13 @@ do {
 Unless otherwise denoted, all operands must be register names.
 * increment `x`:
   * innovate `x`
-* multiply `x` by 10:
+* multiply `x` by 2:
   * amplify `x`
 * multiply `x` by -1:
   * revamp `x`
 * decrement `x`:
   * streamline `x`
-* divide `x` by 10:
+* divide `x` by 2:
   * backburner `x`
 * add `x` to `y` and store the result in `x`
   * synergize `x` with `y`
@@ -102,4 +102,4 @@ More examples:
 * `Marketing, Marketing, Marketing` = `555`
 
 ## Comments
-The syntax of Strategic Communication meets or exceeds the highest standards of corporate communication, therefore comments are unnecessary and not supported.
+The syntax of Strategic Communication meets or exceeds the highest standards of corporate discourse, therefore comments are unnecessary and not supported.
