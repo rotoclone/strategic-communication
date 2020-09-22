@@ -5,7 +5,7 @@ use crate::{
 use rand::Rng;
 use regex::Regex;
 use std::collections::hash_map::Entry::Occupied;
-use std::io::Read;
+use std::io::{Read, Write};
 
 /// Does nothing.
 pub fn no_op(operands: &str, _context: &mut Context) -> OpResult {
@@ -261,7 +261,10 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
     }
 
     match std::char::from_u32(to_print as u32) {
-        Some(c) => print!("{}", c),
+        Some(c) => {
+            print!("{}", c);
+            std::io::stdout().flush().unwrap();
+        }
         _ => {
             return Err(RuntimeError::new(
                 &format!(
