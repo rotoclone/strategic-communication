@@ -95,7 +95,7 @@ To run a Strategic Communication program, download the interpreter for your syst
 strategic-communication.exe examples\hello_world.business
 ```
 
-### OSX/Linux
+### macOS/Linux
 ```
 ./strategic-communication examples/hello_world.business
 ```
