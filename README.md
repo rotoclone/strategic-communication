@@ -27,8 +27,10 @@ do {
   revenue_streams++
 } while revenue_streams < 0
 ```
+More examples can be found in the [examples](examples) directory.
 
 ## Register names
+There are 8 available registers. Each one starts with a value of 0, and can hold any 32-bit signed integer. They are named as follows:
 * customer experience
 * revenue streams
 * core competencies
@@ -39,6 +41,7 @@ do {
 * assets
 
 ## Constants
+There are 10 constants used to represent literal numbers (more information on using these can be found in the [Constant expressions](#constant-expressions) section below):
 * 0: HR
 * 1: Engineering
 * 2: Legal
@@ -51,6 +54,8 @@ do {
 * 9: Executive Management
 
 ## Operations
+A Strategic Communication program consists of a series of operations separated by newlines.
+
 Unless otherwise denoted, all operands must be register names.
 * increment `x`
   * innovate `x`
@@ -91,7 +96,7 @@ Unless otherwise denoted, all operands must be register names.
 * jump to label `x` if the value in `y` is negative
   * restructure `y` to `x***`
 
-\* can be either a register name or a constant expression
+\* can be either a [register name](#register-names) or a [constant expression](#constant-expressions)
 
 \** can be any string containing no reserved words
 
@@ -108,3 +113,16 @@ More examples:
 
 ## Comments
 The syntax of Strategic Communication meets or exceeds the highest standards of corporate discourse, therefore comments are unnecessary and not supported.
+
+## Running a program
+To run a Strategic Communication program, download the interpreter for your system from the [latest release](TODO) and provide the path to the source code when running the command.
+
+### Windows
+```
+strategic-communication.exe examples\hello_world.business
+```
+
+### OSX/Linux
+```
+./strategic-communication examples/hello_world.business
+```
