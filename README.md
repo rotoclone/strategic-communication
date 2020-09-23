@@ -115,7 +115,7 @@ More examples:
 The syntax of Strategic Communication meets or exceeds the highest standards of corporate discourse, therefore comments are unnecessary and not supported.
 
 ## Running a program
-To run a Strategic Communication program, download the interpreter for your system from the [latest release](TODO) and provide the path to the source code when running the command.
+To run a Strategic Communication program, download the interpreter for your system from the [latest release](https://github.com/rotoclone/strategic-communication/releases) and provide the path to the source code when running the command.
 
 ### Windows
 ```
