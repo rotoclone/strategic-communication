@@ -99,3 +99,8 @@ strategic-communication.exe examples\hello_world.business
 ```
 ./strategic-communication examples/hello_world.business
 ```
+
+## Building the interpreter
+1. Clone this repo
+2. [Install Rust](https://www.rust-lang.org/tools/install)
+3. `cargo build`
