@@ -57,50 +57,23 @@ There are 10 constants used to represent literal numbers (more information on us
 A Strategic Communication program consists of a series of operations separated by newlines.
 
 Unless otherwise denoted, all operands must be register names.
-* increment `x`
-  * innovate `x`
-  * value-add `x`
-* decrement `x`
-  * streamline `x`
-  * optimize `x`
-* multiply `x` by -1
-  * revamp `x`
-  * overhaul `x`
-* multiply `x` by 2
-  * amplify `x`
-  * incentivize `x`
-* divide `x` by 2 (throwing away remainder)
-  * backburner `x`
-* set `x` to a random number between 0 and 9 inclusive
-  * paradigm shift `x`
-* set `x` to `y`
-  * align `x` with `y*`
-* add `x` to `y` and store the result in `x`
-  * synergize `x` and `y`
-  * integrate `x` and `y`
-* subtract `y` from `x` and store the result in `x`
-  * differentiate `x` and `y`
-* read a single byte from stdin and store it in `x` (if there are no bytes to read, `x` is set to -1)
-  * crowdsource `x`
-* print `x` to stdout (in UTF-8 encoding)
-  * deliver `x`
-  * produce `x`
-* define a label called `x`
-  * moving forward, `x**`
-  * going forward, `x**`
-* jump to label `x`
-  * circle back to `x***`
-  * revisit `x***`
-* jump to label `x` if the value in `y` is zero
-  * pivot `y` to `x***`
-* jump to label `x` if the value in `y` is negative
-  * restructure `y` to `x***`
-
-\* can be either a [register name](#register-names) or a [constant expression](#constant-expressions)
-
-\** can be any string containing no reserved words
-
-\*** must be a defined label
+|Description|Formats|Notes|
+|-----------|-------|-----|
+|increment the value in `x`|<ul><li>`innovate x`</li><br><li>`value-add x`</li></ul>||
+|decrement the value in `x`|<ul><li>`streamline x`</li><br><li>`optimize x`</li></ul>||
+|multiply the value in `x` by -1|<ul><li>`revamp x`</li><br><li>`overhaul x`</li></ul>||
+|multiply the value in `x` by 2|<ul><li>`amplify x`</li><br><li>`incentivize x`</li></ul>||
+|divide the value in `x` by 2|<ul><li>`backburner x`</li></ul>|any remainder is discarded|
+|set the value in `x` to a random number between 0 and 9 inclusive|<ul><li>`paradigm shift x`</li></ul>||
+|set the value in `x` to the value in `y`|<ul><li>`align x with y`</li></ul>|`y` can be a [register name](#register-names) or a [constant expression](#constant-expressions)|
+|add the value in `x` to the value in `y` and store the result in `x`|<ul><li>`synergize x and y`</li><br><li>`integrate x and y`</li></ul>||
+|subtract the value in `y` from the value in `x` and store the result in `x`|<ul><li>`differentiate x and y`</li></ul>||
+|read a single byte from stdin and store it in `x`|<ul><li>`crowdsource x`</li></ul>|if EOF is encountered, the value in `x` is set to -1|
+|print the value in `x` to stdout|<ul><li>`deliver x`</li><br><li>`produce x`</li></ul>|UTF-8 encoding will be used|
+|define a label called `x`|<ul><li>`moving forward, x`</li><br><li>`going forward, x`</li></ul>|`x` can be any string containing no [register names](#register-names) or [constants](#constants)|
+|jump to label `x`|<ul><li>`circle back to x`</li><li>`revisit x`</li></ul>|`x` must be a defined label|
+|jump to label `x` if the value in `y` is zero|<ul><li>`pivot y to x`</li></ul>|`x` must be a defined label|
+|jump to label `x` if the value in `y` is negative|<ul><li>`restructure y to x`</li></ul>|`x` must be a defined label|
 
 ## Constant expressions
 A constant expression is a sequence of one or more constants separated by `,` or `and`. The value of the expression is the result of concatenating the values of the constants. For example, `Engineering` has a value of `1` and `Marketing` has a value of `5`, so the expression `Engineering and Marketing` has a value of `15`.
