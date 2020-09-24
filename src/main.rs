@@ -130,6 +130,7 @@ fn main() {
     let source: Vec<String> = source
         .split('\n')
         .map(|line| line.trim().to_lowercase())
+        .filter(|line| !line.is_empty())
         .collect();
 
     if let Err(e) = run(source) {
