@@ -87,6 +87,9 @@ More examples:
 ## Comments
 The syntax of Strategic Communication meets or exceeds the highest standards of corporate discourse, therefore comments are unnecessary and not supported.
 
+## Editor support
+For those who are not seasoned executives, there is a syntax highlighter made by [dnchu](https://github.com/dnchu) for VS Code: https://github.com/dnchu/vscode-strategic-communication
+
 ## Running a program
 To run a Strategic Communication program, download the interpreter for your system from the [latest release](https://github.com/rotoclone/strategic-communication/releases) and provide the path to the source code when running the command.
 
