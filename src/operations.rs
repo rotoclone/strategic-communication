@@ -86,7 +86,7 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
-    // should be a register followed by a register or literal
+    // should be either a register followed by a register or literal, or a literal followed by a register
     if operands.len() != 2 {
         return Err(RuntimeError::new(
             "wrong number of operands for assignment",
@@ -94,17 +94,38 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
         ));
     }
 
-    let to_register = match &operands[0] {
+    let operand1 = &operands[0];
+    let operand2 = &operands[1];
+
+    if let Operand::Literal(new_value) = operand1 {
+        let to_register = match operand2 {
+            Operand::Register(name) => name,
+            _ => {
+                return Err(RuntimeError::new(
+                    "second operand for assignment must be a register if the first operand is a literal",
+                    context,
+                ))
+            }
+        };
+
+        return Ok(modify_register(
+            to_register,
+            Transformation::Set(*new_value),
+            &mut context,
+        )?);
+    }
+
+    let to_register = match operand1 {
         Operand::Register(name) => name,
         _ => {
             return Err(RuntimeError::new(
-                "first operand for assignment must be a register",
+                "first operand for assignment must be a register or literal",
                 context,
             ))
         }
     };
 
-    let new_value = match &operands[1] {
+    let new_value = match operand2 {
         Operand::Register(name) => get_register_value(name, context)?,
         Operand::Literal(val) => *val,
         _ => {
@@ -401,6 +422,8 @@ fn parse_operands(operands: &str) -> Result<Vec<Operand>, RuntimeError> {
             if remaining_operands.starts_with(literal_name) {
                 let parsed = parse_literal(&mut remaining_operands);
                 parsed_operands.push(Operand::Literal(parsed));
+                let regex = Regex::new(&format!("^({})?", OPERAND_CONNECTORS.join("|"))).unwrap();
+                remaining_operands = regex.replace(&remaining_operands, "").to_string();
                 continue 'outer;
             }
         }
