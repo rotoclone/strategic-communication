@@ -4,10 +4,10 @@ A best-of-breed language with a holistic approach to moving the needle.
 ## Example program
 This program prints the numbers 0 to 9 to stdout separated by newlines:
 ```
-align stakeholder engagement with Engineering and HR
+align Engineering and HR with stakeholder engagement
 align revenue streams with stakeholder engagement
 revamp revenue streams
-align customer experience with Finance and Manufacturing
+align Finance and Manufacturing with customer experience
 moving forward, think outside the box
 deliver customer experience
 deliver stakeholder engagement
@@ -66,6 +66,7 @@ Unless otherwise denoted, all operands must be register names.
 |divide the value in `x` by 2|<ul><li>`backburner x`</li></ul>|any remainder is discarded|
 |set the value in `x` to a random number between 0 and 9 inclusive|<ul><li>`paradigm shift x`</li></ul>||
 |set the value in `x` to the value in `y`|<ul><li>`align x with y`</li></ul>|`y` can be a [register name](#register-names) or a [constant expression](#constant-expressions)|
+|set the value in `x` to the value of `y`|<ul><li>`align y with x`</li></ul>|`y` must be a [constant expression](#constant-expressions)|
 |add the value in `x` to the value in `y` and store the result in `x`|<ul><li>`synergize x and y`</li><br><li>`integrate x and y`</li></ul>||
 |subtract the value in `y` from the value in `x` and store the result in `x`|<ul><li>`differentiate x and y`</li></ul>||
 |read a single byte from stdin and store it in `x`|<ul><li>`crowdsource x`</li></ul>|if EOF is encountered, the value in `x` is set to -1|

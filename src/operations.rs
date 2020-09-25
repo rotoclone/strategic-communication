@@ -86,7 +86,7 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
-    // should be a register followed by a register or literal
+    // should be either a register followed by a register or literal, or a literal followed by a register
     if operands.len() != 2 {
         return Err(RuntimeError::new(
             "wrong number of operands for assignment",
@@ -94,32 +94,43 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
         ));
     }
 
-    let to_register = match &operands[0] {
-        Operand::Register(name) => name,
-        _ => {
-            return Err(RuntimeError::new(
-                "first operand for assignment must be a register",
-                context,
-            ))
-        }
-    };
+    match &operands[0] {
+        Operand::Register(to_register) => {
+            let new_value = match &operands[1] {
+                Operand::Register(name) => get_register_value(name, context)?,
+                Operand::Literal(val) => *val,
+                _ => return Err(RuntimeError::new(
+                    "second operand for assignment must be a register or literal",
+                    context,
+                ))
+            };
 
-    let new_value = match &operands[1] {
-        Operand::Register(name) => get_register_value(name, context)?,
-        Operand::Literal(val) => *val,
-        _ => {
-            return Err(RuntimeError::new(
-                "second operand for assignment must be a register or literal",
-                context,
-            ))
-        }
-    };
-
-    Ok(modify_register(
-        to_register,
-        Transformation::Set(new_value),
-        &mut context,
-    )?)
+            Ok(modify_register(
+                to_register,
+                Transformation::Set(new_value),
+                &mut context,
+            )?)
+        },
+        Operand::Literal(new_value) => {
+            match &operands[1] {
+                Operand::Register(to_register) => {
+                    Ok(modify_register(
+                        to_register,
+                        Transformation::Set(*new_value),
+                        &mut context,
+                    )?)
+                },
+                _ => Err(RuntimeError::new(
+                    "second operand for assignment must be a register if the first operand is a literal",
+                    context,
+                ))
+            }
+        },
+        _ => Err(RuntimeError::new(
+            "first operand for assignment must be a register or literal",
+            context,
+        ))
+    }
 }
 
 /// Adds a register's value to another register's value.
@@ -401,6 +412,8 @@ fn parse_operands(operands: &str) -> Result<Vec<Operand>, RuntimeError> {
             if remaining_operands.starts_with(literal_name) {
                 let parsed = parse_literal(&mut remaining_operands);
                 parsed_operands.push(Operand::Literal(parsed));
+                let regex = Regex::new(&format!("^({})?", OPERAND_CONNECTORS.join("|"))).unwrap();
+                remaining_operands = regex.replace(&remaining_operands, "").to_string();
                 continue 'outer;
             }
         }
