@@ -1,5 +1,5 @@
 use crate::{
-    Context, OpResult, RuntimeError, LITERALS, LITERAL_CONNECTORS, OPERAND_CONNECTORS,
+    Context, OpResult, Error, LITERALS, LITERAL_CONNECTORS, OPERAND_CONNECTORS,
     REGISTER_NAMES,
 };
 use rand::Rng;
@@ -88,7 +88,7 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     let operands = parse_operands(operands)?;
     // should be either a register followed by a register or literal, or a literal followed by a register
     if operands.len() != 2 {
-        return Err(RuntimeError::new(
+        return Err(Error::new(
             "wrong number of operands for assignment",
             context,
         ));
@@ -99,7 +99,7 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
             let new_value = match &operands[1] {
                 Operand::Register(name) => get_register_value(name, context)?,
                 Operand::Literal(val) => *val,
-                _ => return Err(RuntimeError::new(
+                _ => return Err(Error::new(
                     "second operand for assignment must be a register or literal",
                     context,
                 ))
@@ -120,13 +120,13 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
                         &mut context,
                     )?)
                 },
-                _ => Err(RuntimeError::new(
+                _ => Err(Error::new(
                     "second operand for assignment must be a register if the first operand is a literal",
                     context,
                 ))
             }
         },
-        _ => Err(RuntimeError::new(
+        _ => Err(Error::new(
             "first operand for assignment must be a register or literal",
             context,
         ))
@@ -140,7 +140,7 @@ pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
     let operands = parse_operands(operands)?;
     // should be a register followed by a register
     if operands.len() != 2 {
-        return Err(RuntimeError::new(
+        return Err(Error::new(
             "wrong number of operands for add",
             context,
         ));
@@ -149,7 +149,7 @@ pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
     let register = match &operands[0] {
         Operand::Register(name) => name,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "first operand for add must be a register",
                 context,
             ))
@@ -159,7 +159,7 @@ pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
     let to_add = match &operands[1] {
         Operand::Register(name) => get_register_value(name, context)?,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "second operand for add must be a register",
                 context,
             ))
@@ -180,7 +180,7 @@ pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
     let operands = parse_operands(operands)?;
     // should be a register followed by a register
     if operands.len() != 2 {
-        return Err(RuntimeError::new(
+        return Err(Error::new(
             "wrong number of operands for subtract",
             context,
         ));
@@ -189,7 +189,7 @@ pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
     let register = match &operands[0] {
         Operand::Register(name) => name,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "first operand for subtract must be a register",
                 context,
             ))
@@ -199,7 +199,7 @@ pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
     let to_sub = match &operands[1] {
         Operand::Register(name) => get_register_value(name, context)?,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "second operand for subtract must be a register",
                 context,
             ))
@@ -221,7 +221,7 @@ pub fn read(operands: &str, mut context: &mut Context) -> OpResult {
         Some(b) => match b {
             Ok(b) => b as i32,
             Err(e) => {
-                return Err(RuntimeError::new(
+                return Err(Error::new(
                     &format!("error reading from stdin: {}", e),
                     context,
                 ))
@@ -244,7 +244,7 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
     let operands = parse_operands(operands)?;
     // should be a register
     if operands.len() != 1 {
-        return Err(RuntimeError::new(
+        return Err(Error::new(
             "wrong number of operands for print",
             context,
         ));
@@ -253,7 +253,7 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
     let register = match &operands[0] {
         Operand::Register(name) => name,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "operand for print must be a register",
                 context,
             ))
@@ -262,7 +262,7 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
 
     let to_print = get_register_value(register, context)?;
     if to_print < 0 {
-        return Err(RuntimeError::new(
+        return Err(Error::new(
             &format!(
                 "{} does not correspond to a valid UTF-8 character",
                 to_print
@@ -277,7 +277,7 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
             std::io::stdout().flush().unwrap();
         }
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 &format!(
                     "{} does not correspond to a valid UTF-8 character",
                     to_print
@@ -304,7 +304,7 @@ pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
     let operands = parse_operands(operands)?;
     // should be a register and a label
     if operands.len() != 2 {
-        return Err(RuntimeError::new(
+        return Err(Error::new(
             "wrong number of operands for jump if zero",
             context,
         ));
@@ -313,7 +313,7 @@ pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
     let register = match &operands[0] {
         Operand::Register(name) => name,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "first operand for jump if zero must be a register",
                 context,
             ))
@@ -323,7 +323,7 @@ pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
     let label = match &operands[1] {
         Operand::Label(name) => name,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "second operand for jump if zero must be a label",
                 context,
             ))
@@ -344,7 +344,7 @@ pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     let operands = parse_operands(operands)?;
     // should be a register and a label
     if operands.len() != 2 {
-        return Err(RuntimeError::new(
+        return Err(Error::new(
             "wrong number of operands for jump if negative",
             context,
         ));
@@ -353,7 +353,7 @@ pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     let register = match &operands[0] {
         Operand::Register(name) => name,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "first operand for jump if negative must be a register",
                 context,
             ))
@@ -363,7 +363,7 @@ pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     let label = match &operands[1] {
         Operand::Label(name) => name,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 "second operand for jump if negative must be a label",
                 context,
             ))
@@ -389,7 +389,7 @@ enum Operand {
 }
 
 /// Parses a string of operands to a list of `Operand`s.
-fn parse_operands(operands: &str) -> Result<Vec<Operand>, RuntimeError> {
+fn parse_operands(operands: &str) -> Result<Vec<Operand>, Error> {
     let mut remaining_operands = operands.to_string();
     let mut parsed_operands = Vec::new();
     'outer: while !remaining_operands.is_empty() {
@@ -460,10 +460,10 @@ fn parse_literal(operands: &mut String) -> i32 {
 }
 
 /// Gets the value stored in the register with the provided name.
-fn get_register_value(name: &str, context: &Context) -> Result<i32, RuntimeError> {
+fn get_register_value(name: &str, context: &Context) -> Result<i32, Error> {
     match context.registers.get(name) {
         Some(x) => Ok(*x),
-        _ => Err(RuntimeError::new(
+        _ => Err(Error::new(
             &format!("invalid register name: {}", name),
             context,
         )),
@@ -483,7 +483,7 @@ fn modify_register(name: &str, transformation: Transformation, context: &mut Con
     let mut register = match context.registers.entry(name.to_string()) {
         Occupied(e) => e,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 &format!("invalid register name: {}", name),
                 context,
             ))
@@ -505,7 +505,7 @@ fn jump_to_label(name: &str, mut context: &mut Context) -> OpResult {
     match context.labels.get(name) {
         Some(x) => context.current_line_number = *x,
         _ => {
-            return Err(RuntimeError::new(
+            return Err(Error::new(
                 &format!("unknown label: {}", name),
                 context,
             ))

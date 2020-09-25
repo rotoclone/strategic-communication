@@ -3,7 +3,6 @@ mod operations;
 use clap::Clap;
 use regex::Regex;
 use std::collections::HashMap;
-use std::error::Error;
 use std::fmt;
 use std::fs;
 
@@ -143,8 +142,8 @@ fn main() {
 /// # Arguments
 /// * `source`: The source code of the program to run, split by line.
 ///
-/// Returns `Err(RuntimeError)` if any errors occurred during the execution of the program.
-fn run(source: Vec<String>) -> Result<(), RuntimeError> {
+/// Returns `Err(Error)` if any errors occurred during the execution of the program.
+fn run(source: Vec<String>) -> Result<(), Error> {
     let mut context = Context::new(source);
     debug!("created context: {:?}", context);
     while context.current_line_number < context.source.len() {
@@ -155,16 +154,14 @@ fn run(source: Vec<String>) -> Result<(), RuntimeError> {
 
 /// An error during the execution of a program.
 #[derive(Debug)]
-pub struct RuntimeError {
+pub struct Error {
     /// The 0-indexed line number the error occurred on.
     line_number: usize,
     /// A message describing the error.
     message: String,
 }
 
-impl Error for RuntimeError {}
-
-impl fmt::Display for RuntimeError {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -175,10 +172,10 @@ impl fmt::Display for RuntimeError {
     }
 }
 
-impl RuntimeError {
-    /// Creates a new `RuntimeError` with the provided message.
-    fn new(message: &str, context: &Context) -> RuntimeError {
-        RuntimeError {
+impl Error {
+    /// Creates a new `Error` with the provided message.
+    fn new(message: &str, context: &Context) -> Error {
+        Error {
             line_number: context.current_line_number,
             message: message.to_string(),
         }
@@ -186,7 +183,7 @@ impl RuntimeError {
 }
 
 /// Return type for operation execution functions.
-type OpResult = Result<(), RuntimeError>;
+type OpResult = Result<(), Error>;
 
 /// An operation corresponding to a line of source code.
 struct Operation {
@@ -245,9 +242,9 @@ impl Context {
     }
 
     /// Executes the line at `source[current_line_number]` and sets `current_line_number` to the index of the next line to execute.
-    fn execute_current_line(&mut self) -> Result<(), RuntimeError> {
+    fn execute_current_line(&mut self) -> Result<(), Error> {
         if self.current_line_number >= self.source.len() {
-            return Err(RuntimeError::new("invalid line number", self));
+            return Err(Error::new("invalid line number", self));
         }
 
         let line = &self.source[self.current_line_number];
@@ -264,6 +261,6 @@ impl Context {
             }
         }
 
-        Err(RuntimeError::new("unexpected expression", self))
+        Err(Error::new("unexpected expression", self))
     }
 }
