@@ -4,10 +4,10 @@ A best-of-breed language with a holistic approach to moving the needle.
 ## Example program
 This program prints the numbers 0 to 9 to stdout separated by newlines:
 ```
-align stakeholder engagement with Engineering and HR
+align Engineering and HR with stakeholder engagement
 align revenue streams with stakeholder engagement
 revamp revenue streams
-align customer experience with Finance and Manufacturing
+align Finance and Manufacturing with customer experience
 moving forward, think outside the box
 deliver customer experience
 deliver stakeholder engagement
