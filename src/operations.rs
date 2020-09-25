@@ -94,53 +94,43 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
         ));
     }
 
-    let operand1 = &operands[0];
-    let operand2 = &operands[1];
+    match &operands[0] {
+        Operand::Register(to_register) => {
+            let new_value = match &operands[1] {
+                Operand::Register(name) => get_register_value(name, context)?,
+                Operand::Literal(val) => *val,
+                _ => return Err(RuntimeError::new(
+                    "second operand for assignment must be a register or literal",
+                    context,
+                ))
+            };
 
-    if let Operand::Literal(new_value) = operand1 {
-        let to_register = match operand2 {
-            Operand::Register(name) => name,
-            _ => {
-                return Err(RuntimeError::new(
+            Ok(modify_register(
+                to_register,
+                Transformation::Set(new_value),
+                &mut context,
+            )?)
+        },
+        Operand::Literal(new_value) => {
+            match &operands[1] {
+                Operand::Register(to_register) => {
+                    Ok(modify_register(
+                        to_register,
+                        Transformation::Set(*new_value),
+                        &mut context,
+                    )?)
+                },
+                _ => Err(RuntimeError::new(
                     "second operand for assignment must be a register if the first operand is a literal",
                     context,
                 ))
             }
-        };
-
-        return Ok(modify_register(
-            to_register,
-            Transformation::Set(*new_value),
-            &mut context,
-        )?);
+        },
+        _ => Err(RuntimeError::new(
+            "first operand for assignment must be a register or literal",
+            context,
+        ))
     }
-
-    let to_register = match operand1 {
-        Operand::Register(name) => name,
-        _ => {
-            return Err(RuntimeError::new(
-                "first operand for assignment must be a register or literal",
-                context,
-            ))
-        }
-    };
-
-    let new_value = match operand2 {
-        Operand::Register(name) => get_register_value(name, context)?,
-        Operand::Literal(val) => *val,
-        _ => {
-            return Err(RuntimeError::new(
-                "second operand for assignment must be a register or literal",
-                context,
-            ))
-        }
-    };
-
-    Ok(modify_register(
-        to_register,
-        Transformation::Set(new_value),
-        &mut context,
-    )?)
 }
 
 /// Adds a register's value to another register's value.
