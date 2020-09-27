@@ -1,6 +1,9 @@
 mod operations;
+mod codegen;
+mod lib;
 
 use clap::Clap;
+use codegen::CodeGen;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fmt;
@@ -50,7 +53,7 @@ lazy_static! {
     static ref OPERATIONS: [Operation; 15] = [
         Operation {
             pattern: LABEL_PATTERN.clone(),
-            func: operations::no_op
+            func: operations::label
         },
         Operation {
             pattern: Regex::new("^(innovate|value-add) ").unwrap(),
@@ -132,27 +135,20 @@ fn main() {
         .filter(|line| !line.is_empty())
         .collect();
 
-    if let Err(e) = run(source) {
-        eprintln!("runtime error: {}", e);
+    let program = Program::new(source);
+    match program {
+        Err(e) => {
+            eprintln!("error: {}", e);
+        }
+        Ok(p) => {
+            if let Err(e) = codegen::run(&p) {
+                eprintln!("error: {}", e);
+            }
+        }
     }
 }
 
-/// Runs a program.
-///
-/// # Arguments
-/// * `source`: The source code of the program to run, split by line.
-///
-/// Returns `Err(Error)` if any errors occurred during the execution of the program.
-fn run(source: Vec<String>) -> Result<(), Error> {
-    let mut context = Context::new(source);
-    debug!("created context: {:?}", context);
-    while context.current_line_number < context.source.len() {
-        context.execute_current_line()?;
-    }
-    Ok(())
-}
-
-/// An error during the execution of a program.
+/// An error during the compilation or execution of a program.
 #[derive(Debug)]
 pub struct Error {
     /// The 0-indexed line number the error occurred on.
@@ -172,11 +168,17 @@ impl fmt::Display for Error {
     }
 }
 
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
 impl Error {
     /// Creates a new `Error` with the provided message.
-    fn new(message: &str, context: &Context) -> Error {
+    fn new(message: &str, line_number: usize) -> Error {
         Error {
-            line_number: context.current_line_number,
+            line_number: line_number,
             message: message.to_string(),
         }
     }
@@ -189,39 +191,30 @@ type OpResult = Result<(), Error>;
 struct Operation {
     /// The regular expression to use to determine if a given line should cause this operation to be executed.
     pattern: Regex,
-    /// The function that executes this operation.
-    func: fn(&str, &mut Context) -> OpResult,
+    /// The function that compiles this operation.
+    func: fn(&str, usize, &CodeGen) -> OpResult,
 }
 
-/// A representation of the state of "memory" during the execution of a program.
+/// A representation of a program.
 #[derive(Debug)]
-pub struct Context {
+pub struct Program {
     /// The source code of the program, split by line.
     source: Vec<String>,
-    /// Map of register names to their current values.
-    registers: HashMap<String, i32>,
     /// Map of label names to the lines they are defined on.
     labels: HashMap<String, usize>,
-    /// The 0-indexed line number currently being executed.
-    current_line_number: usize,
 }
 
-impl Context {
-    /// Creates a new `Context` for a program.
+impl Program {
+    /// Creates a new `Program`.
     ///
     /// # Arguments
     /// * `source`: The source code of the program, split by line.
-    fn new(source: Vec<String>) -> Context {
-        let labels = Context::find_labels(&source);
-        Context {
+    fn new(source: Vec<String>) -> Result<Program, Error> {
+        let labels = Program::find_labels(&source)?;
+        Ok(Program {
             source,
-            registers: REGISTER_NAMES
-                .iter()
-                .map(|name| (name.to_string(), 0))
-                .collect(),
             labels,
-            current_line_number: 0,
-        }
+        })
     }
 
     /// Finds all the labels defined in the provided program.
@@ -230,37 +223,23 @@ impl Context {
     /// * `source`: The source code of the program, split by line.
     ///
     /// Returns a map of label names to the lines they are defined on.
-    fn find_labels(source: &[String]) -> HashMap<String, usize> {
+    fn find_labels(source: &[String]) -> Result<HashMap<String, usize>, Error> {
         let mut labels: HashMap<String, usize> = HashMap::new();
         for (line_number, line) in source.iter().enumerate() {
             if LABEL_PATTERN.is_match(line) {
                 let label_name = LABEL_PATTERN.replace(line, "").to_string();
-                labels.insert(label_name, line_number);
+                match labels.get(&label_name) {
+                    Some(other_line_number) => {
+                        return Err(Error::new(
+                            &format!("duplicate label “{}”, previously defined on line {}", label_name, other_line_number), 
+                            line_number));
+                        }
+                    None => {
+                        labels.insert(label_name, line_number);
+                    }
+                }
             }
         }
-        labels
-    }
-
-    /// Executes the line at `source[current_line_number]` and sets `current_line_number` to the index of the next line to execute.
-    fn execute_current_line(&mut self) -> Result<(), Error> {
-        if self.current_line_number >= self.source.len() {
-            return Err(Error::new("invalid line number", self));
-        }
-
-        let line = &self.source[self.current_line_number];
-        debug!("executing line {}: {}", self.current_line_number, line);
-
-        for op in OPERATIONS.iter() {
-            if op.pattern.is_match(line) {
-                let operands = op.pattern.replace(&line, "").to_string();
-                trace!("registers before: {:?}", self.registers);
-                (op.func)(&operands, self)?;
-                trace!("registers after: {:?}", self.registers);
-                self.current_line_number += 1;
-                return Ok(());
-            }
-        }
-
-        Err(Error::new("unexpected expression", self))
+        Ok(labels)
     }
 }

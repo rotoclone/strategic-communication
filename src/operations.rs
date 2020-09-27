@@ -1,88 +1,94 @@
 use crate::{
-    Context, OpResult, Error, LITERALS, LITERAL_CONNECTORS, OPERAND_CONNECTORS,
-    REGISTER_NAMES,
+    OpResult, Error, LITERALS, LITERAL_CONNECTORS, OPERAND_CONNECTORS,
+    REGISTER_NAMES, codegen::CodeGen,
 };
 use rand::Rng;
 use regex::Regex;
-use std::collections::hash_map::Entry::Occupied;
-use std::io::{Read, Write};
 
-/// Does nothing.
-pub fn no_op(operands: &str, _context: &mut Context) -> OpResult {
-    debug!("no op with operands: {}", operands);
+/// Adds a label.
+pub fn label(operands: &str, _line_number: usize, codegen: &CodeGen) -> OpResult {
+    debug!("label with operands: {}", operands);
+    codegen.gen_label(operands);
     Ok(())
 }
 
 /// Increments a register's value by 1.
-pub fn increment(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn increment(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("increment with operands: {}", operands);
 
     Ok(modify_register(
         operands,
-        Transformation::Add(1),
-        &mut context,
+        Transformation::Add(&Operand::Literal(1)),
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Decrements a register's value by 1.
-pub fn decrement(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn decrement(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("decrement with operands: {}", operands);
 
     Ok(modify_register(
         operands,
-        Transformation::Add(-1),
-        &mut context,
+        Transformation::Add(&Operand::Literal(-1)),
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Multiplies a register's value by -1.
-pub fn negate(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn negate(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("negate with operands: {}", operands);
 
     Ok(modify_register(
         operands,
-        Transformation::Multiply(-1),
-        &mut context,
+        Transformation::Multiply(&Operand::Literal(-1)),
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Multiplies a register's value by 2.
-pub fn double(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn double(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("double with operands: {}", operands);
 
     Ok(modify_register(
         operands,
-        Transformation::Multiply(2),
-        &mut context,
+        Transformation::Multiply(&Operand::Literal(2)),
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Divides a register's value by 2.
-pub fn halve(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn halve(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("halve with operands: {}", operands);
 
     Ok(modify_register(
         operands,
-        Transformation::Divide(2),
-        &mut context,
+        Transformation::Divide(&Operand::Literal(2)),
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Sets a register's value to a random number between 0 and 9 (inclusive).
-pub fn randomize(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn randomize(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("randomize with operands: {}", operands);
 
     let random_number = rand::thread_rng().gen_range(0, 10);
 
+    // TODO: implement in library
     Ok(modify_register(
         operands,
-        Transformation::Set(random_number),
-        &mut context,
+        Transformation::Set(&Operand::Literal(random_number)),
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Sets a register's value to the value in another register or a literal value.
-pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn assign(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -90,51 +96,53 @@ pub fn assign(operands: &str, mut context: &mut Context) -> OpResult {
     if operands.len() != 2 {
         return Err(Error::new(
             "wrong number of operands for assignment",
-            context,
+            line_number,
         ));
     }
 
     match &operands[0] {
         Operand::Register(to_register) => {
             let new_value = match &operands[1] {
-                Operand::Register(name) => get_register_value(name, context)?,
-                Operand::Literal(val) => *val,
+                Operand::Register(_) => &operands[1],
+                Operand::Literal(_) => &operands[1],
                 _ => return Err(Error::new(
                     "second operand for assignment must be a register or literal",
-                    context,
+                    line_number,
                 ))
             };
 
             Ok(modify_register(
                 to_register,
                 Transformation::Set(new_value),
-                &mut context,
+                line_number,
+                &codegen,
             )?)
         },
-        Operand::Literal(new_value) => {
+        Operand::Literal(_) => {
             match &operands[1] {
                 Operand::Register(to_register) => {
                     Ok(modify_register(
                         to_register,
-                        Transformation::Set(*new_value),
-                        &mut context,
+                        Transformation::Set(&operands[0]),
+                        line_number,
+                        &codegen,
                     )?)
                 },
                 _ => Err(Error::new(
                     "second operand for assignment must be a register if the first operand is a literal",
-                    context,
+                    line_number,
                 ))
             }
         },
         _ => Err(Error::new(
             "first operand for assignment must be a register or literal",
-            context,
+            line_number,
         ))
     }
 }
 
 /// Adds a register's value to another register's value.
-pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn add(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("add with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -142,7 +150,7 @@ pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
     if operands.len() != 2 {
         return Err(Error::new(
             "wrong number of operands for add",
-            context,
+            line_number,
         ));
     }
 
@@ -151,17 +159,17 @@ pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
         _ => {
             return Err(Error::new(
                 "first operand for add must be a register",
-                context,
+                line_number,
             ))
         }
     };
 
     let to_add = match &operands[1] {
-        Operand::Register(name) => get_register_value(name, context)?,
+        Operand::Register(_) => &operands[1],
         _ => {
             return Err(Error::new(
                 "second operand for add must be a register",
-                context,
+                line_number,
             ))
         }
     };
@@ -169,12 +177,13 @@ pub fn add(operands: &str, mut context: &mut Context) -> OpResult {
     Ok(modify_register(
         register,
         Transformation::Add(to_add),
-        &mut context,
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Subtracts a register's value from another register's value.
-pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn subtract(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("subtract with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -182,7 +191,7 @@ pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
     if operands.len() != 2 {
         return Err(Error::new(
             "wrong number of operands for subtract",
-            context,
+            line_number,
         ));
     }
 
@@ -191,54 +200,59 @@ pub fn subtract(operands: &str, mut context: &mut Context) -> OpResult {
         _ => {
             return Err(Error::new(
                 "first operand for subtract must be a register",
-                context,
+                line_number,
             ))
         }
     };
 
     let to_sub = match &operands[1] {
-        Operand::Register(name) => get_register_value(name, context)?,
+        Operand::Register(_) => &operands[1],
         _ => {
             return Err(Error::new(
                 "second operand for subtract must be a register",
-                context,
+                line_number,
             ))
         }
     };
 
     Ok(modify_register(
         register,
-        Transformation::Add(-to_sub),
-        &mut context,
+        Transformation::Subtract(to_sub),
+        line_number,
+        &codegen,
     )?)
 }
 
 /// Reads a byte from stdin.
-pub fn read(operands: &str, mut context: &mut Context) -> OpResult {
+pub fn read(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("read with operands: {}", operands);
 
-    let new_value = match std::io::stdin().bytes().next() {
-        Some(b) => match b {
-            Ok(b) => b as i32,
-            Err(e) => {
-                return Err(Error::new(
-                    &format!("error reading from stdin: {}", e),
-                    context,
-                ))
-            }
-        },
-        None => -1,
+    let operands = parse_operands(operands)?;
+    // should be a register
+    if operands.len() != 1 {
+        return Err(Error::new(
+            "wrong number of operands for read",
+            line_number,
+        ));
     };
 
-    Ok(modify_register(
-        operands,
-        Transformation::Set(new_value),
-        &mut context,
-    )?)
+    let register = match &operands[0] {
+        Operand::Register(name) => name,
+        _ => {
+            return Err(Error::new(
+                "operand for read must be a register",
+                line_number,
+            ))
+        }
+    };
+
+    codegen.gen_read(register);
+
+    Ok(())
 }
 
 /// Prints a register's value.
-pub fn print(operands: &str, context: &mut Context) -> OpResult {
+pub fn print(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("print with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -246,7 +260,7 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
     if operands.len() != 1 {
         return Err(Error::new(
             "wrong number of operands for print",
-            context,
+            line_number,
         ));
     }
 
@@ -255,50 +269,51 @@ pub fn print(operands: &str, context: &mut Context) -> OpResult {
         _ => {
             return Err(Error::new(
                 "operand for print must be a register",
-                context,
+                line_number,
             ))
         }
     };
 
-    let to_print = get_register_value(register, context)?;
-    if to_print < 0 {
-        return Err(Error::new(
-            &format!(
-                "{} does not correspond to a valid UTF-8 character",
-                to_print
-            ),
-            context,
-        ));
-    }
-
-    match std::char::from_u32(to_print as u32) {
-        Some(c) => {
-            print!("{}", c);
-            std::io::stdout().flush().unwrap();
-        }
-        _ => {
-            return Err(Error::new(
-                &format!(
-                    "{} does not correspond to a valid UTF-8 character",
-                    to_print
-                ),
-                context,
-            ))
-        }
-    }
-
+    codegen.gen_print(register);
     Ok(())
 }
 
 /// Jumps to a label.
-pub fn jump(operands: &str, context: &mut Context) -> OpResult {
+pub fn jump(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("jump with operands: {}", operands);
 
-    jump_to_label(operands, context)
+    let operands = parse_operands(operands)?;
+    // should be a label
+    if operands.len() != 1 {
+        return Err(Error::new(
+            "wrong number of operands for jump",
+            line_number,
+        ));
+    }
+
+    let label = match &operands[0] {
+        Operand::Label(name) => name,
+        _ => {
+            return Err(Error::new(
+                "operand for jump must be a label",
+                line_number,
+            ))
+        }
+    };
+
+    if !codegen.has_label(label) {
+        return Err(Error::new(
+            &format!("jump to undefined label “{}”", label),
+            line_number,
+        ))
+    }
+
+    codegen.gen_jump(label);
+    Ok(())
 }
 
 /// Jumps to a label if a register's value is 0.
-pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
+pub fn jump_if_zero(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("jump if zero with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -306,7 +321,7 @@ pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
     if operands.len() != 2 {
         return Err(Error::new(
             "wrong number of operands for jump if zero",
-            context,
+            line_number,
         ));
     }
 
@@ -315,7 +330,7 @@ pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
         _ => {
             return Err(Error::new(
                 "first operand for jump if zero must be a register",
-                context,
+                line_number,
             ))
         }
     };
@@ -325,20 +340,25 @@ pub fn jump_if_zero(operands: &str, context: &mut Context) -> OpResult {
         _ => {
             return Err(Error::new(
                 "second operand for jump if zero must be a label",
-                context,
+                line_number,
             ))
         }
     };
 
-    if get_register_value(register, context)? == 0 {
-        jump_to_label(label, context)?;
+    if !codegen.has_label(label) {
+        return Err(Error::new(
+            &format!("jump to undefined label “{}”", label),
+            line_number,
+        ))
     }
+
+    codegen.gen_jump_if_zero(register, label);
 
     Ok(())
 }
 
 /// Jumps to a label if a register's value is negative.
-pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
+pub fn jump_if_neg(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("jump if negative with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -346,7 +366,7 @@ pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
     if operands.len() != 2 {
         return Err(Error::new(
             "wrong number of operands for jump if negative",
-            context,
+            line_number,
         ));
     }
 
@@ -355,7 +375,7 @@ pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
         _ => {
             return Err(Error::new(
                 "first operand for jump if negative must be a register",
-                context,
+                line_number,
             ))
         }
     };
@@ -365,21 +385,26 @@ pub fn jump_if_neg(operands: &str, context: &mut Context) -> OpResult {
         _ => {
             return Err(Error::new(
                 "second operand for jump if negative must be a label",
-                context,
+                line_number,
             ))
         }
     };
 
-    if get_register_value(register, context)? < 0 {
-        jump_to_label(label, context)?;
+    if !codegen.has_label(label) {
+        return Err(Error::new(
+            &format!("jump to undefined label “{}”", label),
+            line_number,
+        ))
     }
+
+    codegen.gen_jump_if_neg(register, label);
 
     Ok(())
 }
 
 /// An operand for an operation.
 #[derive(Debug)]
-enum Operand {
+pub enum Operand {
     /// The name of a register.
     Register(String),
     /// A literal value.
@@ -459,58 +484,24 @@ fn parse_literal(operands: &mut String) -> i32 {
     combined
 }
 
-/// Gets the value stored in the register with the provided name.
-fn get_register_value(name: &str, context: &Context) -> Result<i32, Error> {
-    match context.registers.get(name) {
-        Some(x) => Ok(*x),
-        _ => Err(Error::new(
-            &format!("invalid register name: {}", name),
-            context,
-        )),
-    }
-}
-
 /// A transformation to apply to a register's value.
-enum Transformation {
-    Add(i32),
-    Multiply(i32),
-    Divide(i32),
-    Set(i32),
+pub enum Transformation<'op> {
+    Add(&'op Operand),
+    Subtract(&'op Operand),
+    Multiply(&'op Operand),
+    Divide(&'op Operand),
+    Set(&'op Operand),
 }
 
 /// Modifies the register with the provided name using the provided `Transformation`.
-fn modify_register(name: &str, transformation: Transformation, context: &mut Context) -> OpResult {
-    let mut register = match context.registers.entry(name.to_string()) {
-        Occupied(e) => e,
-        _ => {
-            return Err(Error::new(
-                &format!("invalid register name: {}", name),
-                context,
-            ))
-        }
-    };
-
-    match transformation {
-        Transformation::Add(x) => register.insert(register.get() + x),
-        Transformation::Multiply(x) => register.insert(register.get() * x),
-        Transformation::Divide(x) => register.insert(register.get() / x),
-        Transformation::Set(x) => register.insert(x),
-    };
-
-    Ok(())
-}
-
-/// Sets the provided context's `current_line_number` to the line the provided label is defined on.
-fn jump_to_label(name: &str, mut context: &mut Context) -> OpResult {
-    match context.labels.get(name) {
-        Some(x) => context.current_line_number = *x,
-        _ => {
-            return Err(Error::new(
-                &format!("unknown label: {}", name),
-                context,
-            ))
-        }
+fn modify_register(name: &str, transformation: Transformation, line_number: usize, codegen: &CodeGen) -> OpResult {
+    if codegen.has_register(name) {
+        codegen.gen_modify_register(name, transformation);
+        Ok(())
+    } else {
+        Err(Error::new(
+            &format!("invalid register name: {}", name),
+            line_number,
+        ))
     }
-
-    Ok(())
 }
