@@ -118,7 +118,10 @@ lazy_static! {
 /// More information can be found at https://github.com/rotoclone/strategic-communication/blob/master/README.md
 #[derive(Clap)]
 #[clap(version = env!("CARGO_PKG_VERSION"))]
-struct Opts {
+pub struct Opts {
+    /// Print the LLVM IR to the console
+    #[clap(short('i'), long)]
+    print_ir: bool,
     /// The path to the file containing source code to execute
     file: String,
 }
@@ -141,7 +144,7 @@ fn main() {
             eprintln!("error: {}", e);
         }
         Ok(p) => {
-            if let Err(e) = codegen::run(&p) {
+            if let Err(e) = codegen::run(&p, opts.print_ir) {
                 eprintln!("error: {}", e);
             }
         }

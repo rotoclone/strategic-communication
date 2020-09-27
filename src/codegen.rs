@@ -27,7 +27,7 @@ pub struct CodeGen<'ctx> {
 
 type EntryPoint = unsafe extern "C" fn();
 
-pub fn run(program: &Program) -> Result<(), Box<dyn Error>> {
+pub fn run(program: &Program, print_ir: bool) -> Result<(), Box<dyn Error>> {
     let context = Context::create();
     let module = context.create_module("business");
     let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;    
@@ -53,7 +53,9 @@ pub fn run(program: &Program) -> Result<(), Box<dyn Error>> {
     codegen.compile(&program)?;
     
     // print module
-    codegen.module.print_to_stderr();
+    if print_ir {
+        codegen.module.print_to_stderr();
+    }
 
     // run program
     unsafe {
