@@ -194,13 +194,15 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn gen_label(&self, name: &str) {
+        let current_block = self.builder.get_insert_block().unwrap();
         let basic_block = self.labels[name];
-        self.builder.build_unconditional_branch(basic_block);
+        if current_block.get_terminator() == None {
+            self.builder.build_unconditional_branch(basic_block);
+        }
         self.builder.position_at_end(basic_block);
     }
 
     pub fn gen_jump(&self, label: &str) {
-        println!("finding label {}", label);
         let branch_block = self.labels[label];
         self.builder.build_unconditional_branch(branch_block);
     }
