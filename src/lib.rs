@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::io::Write;
 
 /// Functions called by Strategic Communication programs
@@ -25,7 +26,16 @@ pub extern fn print_value(to_print: i32) {
     }
 }
 
+#[no_mangle]
+/// Returns a random number between 0 and 9 (inclusive).
+pub extern fn randomize() -> i32 {
+    rand::thread_rng().gen_range(0, 10)
+}
+
 // Adding the functions above to static,
 // so Rust compiler won't remove them.
 #[used]
 static PRINT_VALUE_FUNC: extern "C" fn(i32) = print_value;
+
+#[used]
+static RANDOMIZE_FUNC: extern "C" fn() -> i32 = randomize;

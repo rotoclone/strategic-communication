@@ -2,7 +2,6 @@ use crate::{
     OpResult, Error, LITERALS, LITERAL_CONNECTORS, OPERAND_CONNECTORS,
     REGISTER_NAMES, codegen::CodeGen,
 };
-use rand::Rng;
 use regex::Regex;
 
 /// Adds a label.
@@ -76,15 +75,27 @@ pub fn halve(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult 
 pub fn randomize(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
     debug!("randomize with operands: {}", operands);
 
-    let random_number = rand::thread_rng().gen_range(0, 10);
+    let operands = parse_operands(operands)?;
+    // should be a register
+    if operands.len() != 1 {
+        return Err(Error::new(
+            "wrong number of operands for randomize",
+            line_number,
+        ));
+    }
 
-    // TODO: implement in library
-    Ok(modify_register(
-        operands,
-        Transformation::Set(&Operand::Literal(random_number)),
-        line_number,
-        &codegen,
-    )?)
+    let register = match &operands[0] {
+        Operand::Register(name) => name,
+        _ => {
+            return Err(Error::new(
+                "operand for randomize must be a register",
+                line_number,
+            ))
+        }
+    };
+
+    codegen.gen_randomize(register);
+    Ok(())
 }
 
 /// Sets a register's value to the value in another register or a literal value.

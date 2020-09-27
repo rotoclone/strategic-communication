@@ -37,6 +37,7 @@ pub fn run(program: &Program) -> Result<(), Box<dyn Error>> {
     // add builtins
     module.add_function("print_value", context.i32_type().fn_type(&[context.i32_type().into()], false), Some(Linkage::External));
     module.add_function("getchar", context.i32_type().fn_type(&[], false), Some(Linkage::External));
+    module.add_function("randomize", context.i32_type().fn_type(&[], false), Some(Linkage::External));
 
     let mut codegen = CodeGen {
         context: &context,
@@ -230,5 +231,14 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn gen_jump_if_neg(&self, register: &str, label: &str) {
         self.gen_cond_zero_jump(register, IntPredicate::SLT, label);
+    }
+
+    pub fn gen_randomize(&self, register: &str) {
+        let register = self.registers.get(&register.to_string()).unwrap();
+        let result = self.builder.build_call(self.module.get_function("randomize").unwrap(), &[], "randomize")
+            .try_as_basic_value()
+            .left()
+            .unwrap();
+        self.builder.build_store(*register, result);
     }
 }
