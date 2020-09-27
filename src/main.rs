@@ -4,6 +4,7 @@ mod lib;
 
 use clap::Clap;
 use codegen::CodeGen;
+use inkwell::OptimizationLevel;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fmt;
@@ -122,8 +123,19 @@ pub struct Opts {
     /// Print the LLVM IR to the console
     #[clap(short('i'), long)]
     print_ir: bool,
+    #[clap(short('O'), long, possible_values(&["0","1","2","3"]), default_value("2"))]
+    optimization_level: u8,
     /// The path to the file containing source code to execute
     file: String,
+}
+
+fn parse_optimization_level(level: u8) -> OptimizationLevel {
+    match level {
+        1 => OptimizationLevel::Less,
+        2 => OptimizationLevel::Default,
+        3 => OptimizationLevel::Aggressive,
+        _ => OptimizationLevel::None,
+    }
 }
 
 fn main() {
@@ -144,7 +156,7 @@ fn main() {
             eprintln!("error: {}", e);
         }
         Ok(p) => {
-            if let Err(e) = codegen::run(&p, opts.print_ir) {
+            if let Err(e) = codegen::run(&p, opts.print_ir, parse_optimization_level(opts.optimization_level)) {
                 eprintln!("error: {}", e);
             }
         }

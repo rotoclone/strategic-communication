@@ -8,7 +8,7 @@ use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
 use inkwell::module::{Linkage, Module};
-//use inkwell::targets::{InitializationConfig, Target};
+use inkwell::passes::{PassManager, PassManagerBuilder};
 use inkwell::types::{IntType};
 use inkwell::values::{IntValue, PointerValue, FunctionValue};
 use operations::{Operand, Transformation};
@@ -27,10 +27,10 @@ pub struct CodeGen<'ctx> {
 
 type EntryPoint = unsafe extern "C" fn();
 
-pub fn run(program: &Program, print_ir: bool) -> Result<(), Box<dyn Error>> {
+pub fn run(program: &Program, print_ir: bool, optimization_level: OptimizationLevel) -> Result<(), Box<dyn Error>> {
     let context = Context::create();
     let module = context.create_module("business");
-    let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;    
+    let execution_engine = module.create_jit_execution_engine(optimization_level)?;    
     let builder = context.create_builder();
     let register_type = context.i32_type();
 
@@ -49,9 +49,23 @@ pub fn run(program: &Program, print_ir: bool) -> Result<(), Box<dyn Error>> {
         labels: HashMap::new()
     };
 
+    // optimize
+    let pass_manager_builder = PassManagerBuilder::create();
+    pass_manager_builder.set_optimization_level(optimization_level);
+    let fpm = PassManager::create(&codegen.module);
+    pass_manager_builder.populate_function_pass_manager(&fpm);
+
     // compile
     codegen.compile(&program)?;
+
+    // optimize
+    if let Some(function) = codegen.module.get_function("main") {
+        println!("Running optimizer");
+        fpm.run_on(&function);
+    }
     
+    
+
     // print module
     if print_ir {
         codegen.module.print_to_stderr();
