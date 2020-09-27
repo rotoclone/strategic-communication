@@ -76,7 +76,6 @@ impl<'ctx> CodeGen<'ctx> {
         lines_with_labels.sort();
         for line in lines_with_labels.iter() {
             let label = &labels_by_line[line];
-            println!("line {}: {}", line, label);
             let block = self.context.append_basic_block(function, &label);
             self.labels.insert(label.to_string(), block);
         }
