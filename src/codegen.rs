@@ -29,7 +29,7 @@ type EntryPoint = unsafe extern "C" fn();
 
 pub fn run(program: &Program, print_ir: bool, optimization_level: OptimizationLevel) -> Result<(), Box<dyn Error>> {
     let context = Context::create();
-    let module = context.create_module("business");
+    let module = context.create_module(&program.name);
     let execution_engine = module.create_jit_execution_engine(optimization_level)?;    
     let builder = context.create_builder();
     let register_type = context.i32_type();

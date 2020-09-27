@@ -9,6 +9,7 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::fmt;
 use std::fs;
+use std::path::Path;
 
 #[macro_use]
 extern crate log;
@@ -143,14 +144,15 @@ fn main() {
 
     let opts = Opts::parse();
 
-    let source = fs::read_to_string(opts.file).expect("cannot open file");
+    let path = Path::new(&opts.file);
+    let source = fs::read_to_string(path).expect("cannot open file");
     let source: Vec<String> = source
         .split('\n')
         .map(|line| line.trim().to_lowercase())
         .filter(|line| !line.is_empty())
         .collect();
 
-    let program = Program::new(source);
+    let program = Program::new(path.file_name().unwrap().to_str().unwrap().to_string(), source);
     match program {
         Err(e) => {
             eprintln!("error: {}", e);
@@ -213,6 +215,8 @@ struct Operation {
 /// A representation of a program.
 #[derive(Debug)]
 pub struct Program {
+    /// The name of the program
+    name: String,
     /// The source code of the program, split by line.
     source: Vec<String>,
     /// Map of label names to the lines they are defined on.
@@ -224,9 +228,10 @@ impl Program {
     ///
     /// # Arguments
     /// * `source`: The source code of the program, split by line.
-    fn new(source: Vec<String>) -> Result<Program, Error> {
+    fn new(name: String, source: Vec<String>) -> Result<Program, Error> {
         let labels = Program::find_labels(&source)?;
         Ok(Program {
+            name,
             source,
             labels,
         })
