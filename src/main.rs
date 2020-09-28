@@ -124,6 +124,9 @@ pub struct Opts {
     /// Print the LLVM IR to the console
     #[clap(short('i'), long)]
     print_ir: bool,
+    /// View the control flow graph
+    #[clap(long)]
+    view_cfg: bool,
     #[clap(short('O'), long, possible_values(&["0","1","2","3"]), default_value("2"))]
     optimization_level: u8,
     /// The path to the file containing source code to execute
@@ -158,7 +161,7 @@ fn main() {
             eprintln!("error: {}", e);
         }
         Ok(p) => {
-            if let Err(e) = codegen::run(&p, opts.print_ir, parse_optimization_level(opts.optimization_level)) {
+            if let Err(e) = codegen::run(&p, opts.print_ir, opts.view_cfg, parse_optimization_level(opts.optimization_level)) {
                 eprintln!("error: {}", e);
             }
         }

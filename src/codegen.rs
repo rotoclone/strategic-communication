@@ -27,7 +27,7 @@ pub struct CodeGen<'ctx> {
 
 type EntryPoint = unsafe extern "C" fn();
 
-pub fn run(program: &Program, print_ir: bool, optimization_level: OptimizationLevel) -> Result<(), Box<dyn Error>> {
+pub fn run(program: &Program, print_ir: bool, view_cfg: bool, optimization_level: OptimizationLevel) -> Result<(), Box<dyn Error>> {
     let context = Context::create();
     let module = context.create_module(&program.name);
     let execution_engine = module.create_jit_execution_engine(optimization_level)?;    
@@ -58,14 +58,15 @@ pub fn run(program: &Program, print_ir: bool, optimization_level: OptimizationLe
     // compile
     codegen.compile(&program)?;
 
-    // optimize
     if let Some(function) = codegen.module.get_function("main") {
-        println!("Running optimizer");
+        // optimize
         fpm.run_on(&function);
+        // view cfg
+        if view_cfg {
+            function.view_function_cfg_only();
+        }
     }
     
-    
-
     // print module
     if print_ir {
         codegen.module.print_to_stderr();
