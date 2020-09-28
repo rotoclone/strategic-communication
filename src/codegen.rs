@@ -81,10 +81,18 @@ pub fn run(program: &Program, print_ir: bool, view_cfg: bool, optimization_level
     Ok(())
 }
 
+fn unique_label<'a,V>(labels: &HashMap<String,V>, name: &'a str) -> String {
+    let mut label = name.to_string();
+    while labels.contains_key(&label) {
+        label = format!("_{}", label);
+    }
+    return label;
+}
+
 impl<'ctx> CodeGen<'ctx> {
     fn create_basic_blocks(&mut self, function: FunctionValue<'ctx>, labels: &HashMap<String, usize>) {
         // basic block for entry point
-        let basic_block = self.context.append_basic_block(function, "entry");
+        let basic_block = self.context.append_basic_block(function, &unique_label(labels, "entry"));
         self.builder.position_at_end(basic_block);
 
         // basic blocks for labels, in line order
