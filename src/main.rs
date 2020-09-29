@@ -1,15 +1,21 @@
 mod operations;
+#[cfg(feature = "llvm")]
 mod codegen;
+#[cfg(not(feature = "llvm"))]
+mod interpreter;
 mod lib;
 
 use clap::Clap;
-use codegen::CodeGen;
-use inkwell::OptimizationLevel;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fmt;
 use std::fs;
 use std::path::Path;
+
+#[cfg(feature = "llvm")]
+type Context<'ctx> = codegen::CodeGen<'ctx>;
+#[cfg(not(feature = "llvm"))]
+type Context<'ctx> = interpreter::Context<'ctx>;
 
 #[macro_use]
 extern crate log;
@@ -123,23 +129,17 @@ lazy_static! {
 pub struct Opts {
     /// Print the LLVM IR to the console
     #[clap(short('i'), long)]
+    #[cfg(feature = "llvm")]
     print_ir: bool,
     /// View the control flow graph
     #[clap(long)]
+    #[cfg(feature = "llvm")]
     view_cfg: bool,
     #[clap(short('O'), long, possible_values(&["0","1","2","3"]), default_value("2"))]
+    #[cfg(feature = "llvm")]
     optimization_level: u8,
     /// The path to the file containing source code to execute
     file: String,
-}
-
-fn parse_optimization_level(level: u8) -> OptimizationLevel {
-    match level {
-        1 => OptimizationLevel::Less,
-        2 => OptimizationLevel::Default,
-        3 => OptimizationLevel::Aggressive,
-        _ => OptimizationLevel::None,
-    }
 }
 
 fn main() {
@@ -161,7 +161,7 @@ fn main() {
             eprintln!("error: {}", e);
         }
         Ok(p) => {
-            if let Err(e) = codegen::run(&p, opts.print_ir, opts.view_cfg, parse_optimization_level(opts.optimization_level)) {
+            if let Err(e) = Context::run(&p, &opts) {
                 eprintln!("error: {}", e);
             }
         }
@@ -212,7 +212,7 @@ struct Operation {
     /// The regular expression to use to determine if a given line should cause this operation to be executed.
     pattern: Regex,
     /// The function that compiles this operation.
-    func: fn(&str, usize, &CodeGen) -> OpResult,
+    func: fn(&str, usize, &mut Context) -> OpResult,
 }
 
 /// A representation of a program.

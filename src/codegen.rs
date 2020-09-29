@@ -1,5 +1,5 @@
 use crate::{
-    Program, OPERATIONS, REGISTER_NAMES, operations
+    Program, OPERATIONS, REGISTER_NAMES, Opts, operations
 };
 use inkwell::OptimizationLevel;
 use inkwell::IntPredicate;
@@ -27,58 +27,70 @@ pub struct CodeGen<'ctx> {
 
 type EntryPoint = unsafe extern "C" fn();
 
-pub fn run(program: &Program, print_ir: bool, view_cfg: bool, optimization_level: OptimizationLevel) -> Result<(), Box<dyn Error>> {
-    let context = Context::create();
-    let module = context.create_module(&program.name);
-    let execution_engine = module.create_jit_execution_engine(optimization_level)?;    
-    let builder = context.create_builder();
-    let register_type = context.i32_type();
+fn parse_optimization_level(level: u8) -> OptimizationLevel {
+    match level {
+        1 => OptimizationLevel::Less,
+        2 => OptimizationLevel::Default,
+        3 => OptimizationLevel::Aggressive,
+        _ => OptimizationLevel::None,
+    }
+}
 
-    // add builtins
-    module.add_function("print_value", context.i32_type().fn_type(&[context.i32_type().into()], false), Some(Linkage::External));
-    module.add_function("getchar", context.i32_type().fn_type(&[], false), Some(Linkage::External));
-    module.add_function("randomize", context.i32_type().fn_type(&[], false), Some(Linkage::External));
+impl CodeGen<'_> {
+    pub fn run(program: &Program, opts: &Opts) -> Result<(), Box<dyn Error>> {
+        let context = Context::create();
+        let module = context.create_module(&program.name);
+        let optimization_level = parse_optimization_level(opts.optimization_level);
+        let execution_engine = module.create_jit_execution_engine(optimization_level)?;    
+        let builder = context.create_builder();
+        let register_type = context.i32_type();
 
-    let mut codegen = CodeGen {
-        context: &context,
-        module: module,
-        builder: builder,
-        execution_engine: execution_engine,
-        register_type: register_type,
-        registers: HashMap::new(),
-        labels: HashMap::new()
-    };
+        // add builtins
+        module.add_function("print_value", context.i32_type().fn_type(&[context.i32_type().into()], false), Some(Linkage::External));
+        module.add_function("getchar", context.i32_type().fn_type(&[], false), Some(Linkage::External));
+        module.add_function("randomize", context.i32_type().fn_type(&[], false), Some(Linkage::External));
 
-    // optimize
-    let pass_manager_builder = PassManagerBuilder::create();
-    pass_manager_builder.set_optimization_level(optimization_level);
-    let fpm = PassManager::create(&codegen.module);
-    pass_manager_builder.populate_function_pass_manager(&fpm);
+        let mut codegen = CodeGen {
+            context: &context,
+            module: module,
+            builder: builder,
+            execution_engine: execution_engine,
+            register_type: register_type,
+            registers: HashMap::new(),
+            labels: HashMap::new()
+        };
 
-    // compile
-    codegen.compile(&program)?;
-
-    if let Some(function) = codegen.module.get_function("main") {
         // optimize
-        fpm.run_on(&function);
-        // view cfg
-        if view_cfg {
-            function.view_function_cfg_only();
+        let pass_manager_builder = PassManagerBuilder::create();
+        pass_manager_builder.set_optimization_level(optimization_level);
+        let fpm = PassManager::create(&codegen.module);
+        pass_manager_builder.populate_function_pass_manager(&fpm);
+
+        // compile
+        codegen.compile(&program)?;
+
+        if let Some(function) = codegen.module.get_function("main") {
+            // optimize
+            fpm.run_on(&function);
+            // view cfg
+            if opts.view_cfg {
+                function.view_function_cfg_only();
+            }
         }
-    }
-    
-    // print module
-    if print_ir {
-        codegen.module.print_to_stderr();
-    }
+        
+        // print module
+        if opts.print_ir {
+            codegen.module.print_to_stderr();
+        }
 
-    // run program
-    unsafe {
-        let function: JitFunction<EntryPoint> = codegen.execution_engine.get_function("main")?;
-        function.call();
-    }
+        // run program
+        unsafe {
+            let function: JitFunction<EntryPoint> = codegen.execution_engine.get_function("main")?;
+            function.call();
+        }
 
-    Ok(())
+        Ok(())
+    }
 }
 
 fn unique_label<'a,V>(labels: &HashMap<String,V>, name: &'a str) -> String {
@@ -126,7 +138,7 @@ impl<'ctx> CodeGen<'ctx> {
             for op in OPERATIONS.iter() {
                 if op.pattern.is_match(line) {
                     let operands = op.pattern.replace(&line, "").to_string();
-                    (op.func)(&operands, i, &self)?;
+                    (op.func)(&operands, i, self)?;
                 }
             }
         }
@@ -163,7 +175,7 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.build_store(register, value);
     }
     
-    pub fn gen_modify_register(&self, name: &str, transformation: operations::Transformation) {
+    pub fn gen_modify_register(&mut self, name: &str, transformation: operations::Transformation) {
         let register = self.registers.get(&name.to_string()).unwrap();
 
         match transformation {
@@ -203,13 +215,13 @@ impl<'ctx> CodeGen<'ctx> {
         };
     }
 
-    pub fn gen_print(&self, register: &str) {
+    pub fn gen_print(&mut self, register: &str) {
         let register = self.registers.get(&register.to_string()).unwrap();
         let value = self.builder.build_load(*register, "value");
         self.builder.build_call(self.module.get_function("print_value").unwrap(), &[value], "print");
     }
 
-    pub fn gen_read(&self, register: &str) {
+    pub fn gen_read(&mut self, register: &str) {
         let register = self.registers.get(&register.to_string()).unwrap();
         let result = self.builder.build_call(self.module.get_function("getchar").unwrap(), &[], "read")
             .try_as_basic_value()
@@ -218,7 +230,7 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.build_store(*register, result);
     }
 
-    pub fn gen_label(&self, name: &str) {
+    pub fn gen_label(&mut self, name: &str) {
         let current_block = self.builder.get_insert_block().unwrap();
         let basic_block = self.labels[name];
         if current_block.get_terminator() == None {
@@ -227,12 +239,12 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.position_at_end(basic_block);
     }
 
-    pub fn gen_jump(&self, label: &str) {
+    pub fn gen_jump(&mut self, label: &str) {
         let branch_block = self.labels[label];
         self.builder.build_unconditional_branch(branch_block);
     }
 
-    fn gen_cond_zero_jump(&self, register: &str, cond: IntPredicate, label: &str) {
+    fn gen_cond_zero_jump(&mut self, register: &str, cond: IntPredicate, label: &str) {
         // create a new basic block at the current insertion point
         // to be used as an "else block"
         let current_block = self.builder.get_insert_block().unwrap();
@@ -249,15 +261,15 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.position_at_end(else_block);
     }
 
-    pub fn gen_jump_if_zero(&self, register: &str, label: &str) {
+    pub fn gen_jump_if_zero(&mut self, register: &str, label: &str) {
         self.gen_cond_zero_jump(register, IntPredicate::EQ, label);
     }
 
-    pub fn gen_jump_if_neg(&self, register: &str, label: &str) {
+    pub fn gen_jump_if_neg(&mut self, register: &str, label: &str) {
         self.gen_cond_zero_jump(register, IntPredicate::SLT, label);
     }
 
-    pub fn gen_randomize(&self, register: &str) {
+    pub fn gen_randomize(&mut self, register: &str) {
         let register = self.registers.get(&register.to_string()).unwrap();
         let result = self.builder.build_call(self.module.get_function("randomize").unwrap(), &[], "randomize")
             .try_as_basic_value()

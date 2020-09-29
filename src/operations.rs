@@ -1,78 +1,78 @@
 use crate::{
     OpResult, Error, LITERALS, LITERAL_CONNECTORS, OPERAND_CONNECTORS,
-    REGISTER_NAMES, codegen::CodeGen,
+    REGISTER_NAMES, Context
 };
 use regex::Regex;
 
 /// Adds a label.
-pub fn label(operands: &str, _line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn label(operands: &str, _line_number: usize, context: &mut Context) -> OpResult {
     debug!("label with operands: {}", operands);
-    codegen.gen_label(operands);
+    context.gen_label(operands);
     Ok(())
 }
 
 /// Increments a register's value by 1.
-pub fn increment(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn increment(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("increment with operands: {}", operands);
 
     Ok(modify_register(
         operands,
         Transformation::Add(&Operand::Literal(1)),
         line_number,
-        &codegen,
+        context,
     )?)
 }
 
 /// Decrements a register's value by 1.
-pub fn decrement(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn decrement(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("decrement with operands: {}", operands);
 
     Ok(modify_register(
         operands,
         Transformation::Add(&Operand::Literal(-1)),
         line_number,
-        &codegen,
+        context,
     )?)
 }
 
 /// Multiplies a register's value by -1.
-pub fn negate(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn negate(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("negate with operands: {}", operands);
 
     Ok(modify_register(
         operands,
         Transformation::Multiply(&Operand::Literal(-1)),
         line_number,
-        &codegen,
+        context,
     )?)
 }
 
 /// Multiplies a register's value by 2.
-pub fn double(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn double(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("double with operands: {}", operands);
 
     Ok(modify_register(
         operands,
         Transformation::Multiply(&Operand::Literal(2)),
         line_number,
-        &codegen,
+        context,
     )?)
 }
 
 /// Divides a register's value by 2.
-pub fn halve(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn halve(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("halve with operands: {}", operands);
 
     Ok(modify_register(
         operands,
         Transformation::Divide(&Operand::Literal(2)),
         line_number,
-        &codegen,
+        context,
     )?)
 }
 
 /// Sets a register's value to a random number between 0 and 9 (inclusive).
-pub fn randomize(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn randomize(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("randomize with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -94,12 +94,12 @@ pub fn randomize(operands: &str, line_number: usize, codegen: &CodeGen) -> OpRes
         }
     };
 
-    codegen.gen_randomize(register);
+    context.gen_randomize(register);
     Ok(())
 }
 
 /// Sets a register's value to the value in another register or a literal value.
-pub fn assign(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn assign(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("assignment with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -126,7 +126,7 @@ pub fn assign(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult
                 to_register,
                 Transformation::Set(new_value),
                 line_number,
-                &codegen,
+                context,
             )?)
         },
         Operand::Literal(_) => {
@@ -136,7 +136,7 @@ pub fn assign(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult
                         to_register,
                         Transformation::Set(&operands[0]),
                         line_number,
-                        &codegen,
+                        context,
                     )?)
                 },
                 _ => Err(Error::new(
@@ -153,7 +153,7 @@ pub fn assign(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult
 }
 
 /// Adds a register's value to another register's value.
-pub fn add(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn add(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("add with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -189,12 +189,12 @@ pub fn add(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
         register,
         Transformation::Add(to_add),
         line_number,
-        &codegen,
+        context,
     )?)
 }
 
 /// Subtracts a register's value from another register's value.
-pub fn subtract(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn subtract(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("subtract with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -230,12 +230,12 @@ pub fn subtract(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResu
         register,
         Transformation::Subtract(to_sub),
         line_number,
-        &codegen,
+        context,
     )?)
 }
 
 /// Reads a byte from stdin.
-pub fn read(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn read(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("read with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -257,13 +257,13 @@ pub fn read(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
         }
     };
 
-    codegen.gen_read(register);
+    context.gen_read(register);
 
     Ok(())
 }
 
 /// Prints a register's value.
-pub fn print(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn print(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("print with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -285,12 +285,12 @@ pub fn print(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult 
         }
     };
 
-    codegen.gen_print(register);
+    context.gen_print(register);
     Ok(())
 }
 
 /// Jumps to a label.
-pub fn jump(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn jump(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("jump with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -312,19 +312,19 @@ pub fn jump(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
         }
     };
 
-    if !codegen.has_label(label) {
+    if !context.has_label(label) {
         return Err(Error::new(
             &format!("jump to undefined label “{}”", label),
             line_number,
         ))
     }
 
-    codegen.gen_jump(label);
+    context.gen_jump(label);
     Ok(())
 }
 
 /// Jumps to a label if a register's value is 0.
-pub fn jump_if_zero(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn jump_if_zero(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("jump if zero with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -356,20 +356,20 @@ pub fn jump_if_zero(operands: &str, line_number: usize, codegen: &CodeGen) -> Op
         }
     };
 
-    if !codegen.has_label(label) {
+    if !context.has_label(label) {
         return Err(Error::new(
             &format!("jump to undefined label “{}”", label),
             line_number,
         ))
     }
 
-    codegen.gen_jump_if_zero(register, label);
+    context.gen_jump_if_zero(register, label);
 
     Ok(())
 }
 
 /// Jumps to a label if a register's value is negative.
-pub fn jump_if_neg(operands: &str, line_number: usize, codegen: &CodeGen) -> OpResult {
+pub fn jump_if_neg(operands: &str, line_number: usize, context: &mut Context) -> OpResult {
     debug!("jump if negative with operands: {}", operands);
 
     let operands = parse_operands(operands)?;
@@ -401,14 +401,14 @@ pub fn jump_if_neg(operands: &str, line_number: usize, codegen: &CodeGen) -> OpR
         }
     };
 
-    if !codegen.has_label(label) {
+    if !context.has_label(label) {
         return Err(Error::new(
             &format!("jump to undefined label “{}”", label),
             line_number,
         ))
     }
 
-    codegen.gen_jump_if_neg(register, label);
+    context.gen_jump_if_neg(register, label);
 
     Ok(())
 }
@@ -505,9 +505,9 @@ pub enum Transformation<'op> {
 }
 
 /// Modifies the register with the provided name using the provided `Transformation`.
-fn modify_register(name: &str, transformation: Transformation, line_number: usize, codegen: &CodeGen) -> OpResult {
-    if codegen.has_register(name) {
-        codegen.gen_modify_register(name, transformation);
+fn modify_register(name: &str, transformation: Transformation, line_number: usize, context: &mut Context) -> OpResult {
+    if context.has_register(name) {
+        context.gen_modify_register(name, transformation);
         Ok(())
     } else {
         Err(Error::new(
