@@ -181,7 +181,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "error on line {}: {}",
+            "line {}: {}",
             self.line_number + 1,
             self.message
         )
