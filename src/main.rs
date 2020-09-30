@@ -254,7 +254,7 @@ impl Program {
                 match labels.get(&label_name) {
                     Some(other_line_number) => {
                         return Err(Error::new(
-                            &format!("duplicate label “{}”, previously defined on line {}", label_name, other_line_number), 
+                            &format!("duplicate label “{}”, previously defined on line {}", label_name, other_line_number + 1), 
                             line_number));
                         }
                     None => {
