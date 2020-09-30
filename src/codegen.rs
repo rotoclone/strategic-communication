@@ -1,5 +1,5 @@
 use crate::{
-    Program, OPERATIONS, REGISTER_NAMES, Opts, operations
+    Program, OPERATIONS, REGISTER_NAMES, Opts, operations, Error
 };
 use inkwell::OptimizationLevel;
 use inkwell::IntPredicate;
@@ -13,7 +13,6 @@ use inkwell::types::{IntType};
 use inkwell::values::{IntValue, PointerValue, FunctionValue};
 use operations::{Operand, Transformation};
 use std::collections::HashMap;
-use std::error::Error;
 
 pub struct CodeGen<'ctx> {
     context: &'ctx Context,
@@ -37,7 +36,7 @@ fn parse_optimization_level(level: u8) -> OptimizationLevel {
 }
 
 impl CodeGen<'_> {
-    pub fn run(program: &Program, opts: &Opts) -> Result<(), Box<dyn Error>> {
+    pub fn run(program: &Program, opts: &Opts) -> Result<(), Box<dyn std::error::Error>> {
         let context = Context::create();
         let module = context.create_module(&program.name);
         let optimization_level = parse_optimization_level(opts.optimization_level);
@@ -118,7 +117,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    fn compile(&mut self, program: &Program) -> Result<(), Box<dyn Error>> {
+    fn compile(&mut self, program: &Program) -> Result<(), Box<dyn std::error::Error>> {
         // create function
         let fn_type = self.context.void_type().fn_type(&[], false);
         let function = self.module.add_function("main", fn_type, None);
@@ -133,14 +132,16 @@ impl<'ctx> CodeGen<'ctx> {
             .collect();
 
         // compile code
-        for i in 0..program.source.len() {        
-            let line = &program.source[i];
+        'lines: for line_number in 0..program.source.len() {        
+            let line = &program.source[line_number];
             for op in OPERATIONS.iter() {
                 if op.pattern.is_match(line) {
                     let operands = op.pattern.replace(&line, "").to_string();
-                    (op.func)(&operands, i, self)?;
+                    (op.func)(&operands, line_number, self)?;
+                    continue 'lines;
                 }
             }
+            return Err(Box::new(Error::new("unexpected expression", line_number)));
         }
     
         // end function
