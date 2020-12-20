@@ -154,7 +154,7 @@ fn run(source: Vec<String>) -> Result<(), RuntimeError> {
 }
 
 /// An error during the execution of a program.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct RuntimeError {
     /// The 0-indexed line number the error occurred on.
     line_number: usize,
@@ -197,7 +197,7 @@ struct Operation {
 }
 
 /// A representation of the state of "memory" during the execution of a program.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Context {
     /// The source code of the program, split by line.
     source: Vec<String>,
@@ -218,10 +218,7 @@ impl Context {
         let labels = Context::find_labels(&source);
         Context {
             source,
-            registers: REGISTER_NAMES
-                .iter()
-                .map(|name| (name.to_string(), 0))
-                .collect(),
+            registers: build_initial_registers_map(),
             labels,
             current_line_number: 0,
         }
@@ -266,4 +263,12 @@ impl Context {
 
         Err(RuntimeError::new("unexpected expression", self))
     }
+}
+
+/// Builds a map of all the registers initialized to 0.
+fn build_initial_registers_map() -> HashMap<String, i32> {
+    REGISTER_NAMES
+        .iter()
+        .map(|name| (name.to_string(), 0))
+        .collect()
 }

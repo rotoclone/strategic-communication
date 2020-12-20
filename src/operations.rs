@@ -514,3 +514,153 @@ fn jump_to_label(name: &str, mut context: &mut Context) -> OpResult {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::build_initial_registers_map;
+
+    use super::*;
+    use std::collections::HashMap;
+
+    const STARTING_LINE_NUMBER: usize = 2;
+
+    #[test]
+    fn test_no_op() {
+        let mut context = build_test_context();
+        let expected_context = build_test_context();
+
+        let result = no_op("some operands", &mut context);
+
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_increment_invalid_register() {
+        let mut context = build_test_context();
+        let expected_context = build_test_context();
+
+        let result = increment("notARegister", &mut context);
+
+        let expected_result = Err(RuntimeError {
+            message: "invalid register name: notARegister".to_string(),
+            line_number: STARTING_LINE_NUMBER,
+        });
+        assert_eq!(expected_result, result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_increment_from_0() {
+        let mut context = build_test_context();
+        let mut expected_context = build_test_context();
+        expected_context
+            .registers
+            .insert(REGISTER_NAMES[0].to_string(), 1);
+
+        let result = increment(REGISTER_NAMES[0], &mut context);
+
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_increment_from_nonzero() {
+        let mut context = build_test_context();
+        context.registers.insert(REGISTER_NAMES[0].to_string(), 1);
+        let mut expected_context = build_test_context();
+        expected_context
+            .registers
+            .insert(REGISTER_NAMES[0].to_string(), 2);
+
+        let result = increment(REGISTER_NAMES[0], &mut context);
+
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_increment_from_negative() {
+        let mut context = build_test_context();
+        context.registers.insert(REGISTER_NAMES[0].to_string(), -2);
+        let mut expected_context = build_test_context();
+        expected_context
+            .registers
+            .insert(REGISTER_NAMES[0].to_string(), -1);
+
+        let result = increment(REGISTER_NAMES[0], &mut context);
+
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_decrement_invalid_register() {
+        let mut context = build_test_context();
+        let expected_context = build_test_context();
+
+        let result = decrement("notARegister", &mut context);
+
+        let expected_result = Err(RuntimeError {
+            message: "invalid register name: notARegister".to_string(),
+            line_number: STARTING_LINE_NUMBER,
+        });
+        assert_eq!(expected_result, result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_decrement_from_0() {
+        let mut context = build_test_context();
+        let mut expected_context = build_test_context();
+        expected_context
+            .registers
+            .insert(REGISTER_NAMES[0].to_string(), -1);
+
+        let result = decrement(REGISTER_NAMES[0], &mut context);
+
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_decrement_from_nonzero() {
+        let mut context = build_test_context();
+        context.registers.insert(REGISTER_NAMES[0].to_string(), 1);
+        let mut expected_context = build_test_context();
+        expected_context
+            .registers
+            .insert(REGISTER_NAMES[0].to_string(), 0);
+
+        let result = decrement(REGISTER_NAMES[0], &mut context);
+
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_context, context);
+    }
+
+    #[test]
+    fn test_decrement_from_negative() {
+        let mut context = build_test_context();
+        context.registers.insert(REGISTER_NAMES[0].to_string(), -1);
+        let mut expected_context = build_test_context();
+        expected_context
+            .registers
+            .insert(REGISTER_NAMES[0].to_string(), -2);
+
+        let result = decrement(REGISTER_NAMES[0], &mut context);
+
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_context, context);
+    }
+
+    //TODO more tests
+
+    fn build_test_context() -> Context {
+        Context {
+            source: Vec::new(), // source isn't used by operation functions
+            registers: build_initial_registers_map(),
+            labels: HashMap::new(),
+            current_line_number: STARTING_LINE_NUMBER,
+        }
+    }
+}
