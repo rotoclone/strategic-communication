@@ -108,3 +108,6 @@ strategic-communication.exe examples\hello_world.business
 1. Clone this repo
 2. [Install Rust](https://www.rust-lang.org/tools/install)
 3. `cargo build`
+
+## A note on performance
+The way I implemented the interpreter is super naive; it re-parses every line it executes from its string representation every time. There are likely other easy performance gains I've ignored as well. For those that require high-performing Strategic Communication code (perhaps you want to write a stock-trading script for a Fortune 500 company, or maybe you're just annoyed that the FizzBuzz example takes multiple seconds to run), [zydeco](https://github.com/zydeco) made [a fork with much improved performance via LLVM JIT compilation](https://github.com/zydeco/strategic-communication/tree/llvm).
